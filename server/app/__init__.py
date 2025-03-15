@@ -21,6 +21,9 @@ def create_app(config_name='development'):
     app = Flask(__name__)
     app.config.from_object(config[config_name])
     
+    # Disable automatic trailing slash behavior
+    app.url_map.strict_slashes = False
+    
     # Initialize extensions with app
     db.init_app(app)
     jwt.init_app(app)

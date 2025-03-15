@@ -24,11 +24,24 @@ def create_app(config_name='development'):
     # Initialize extensions with app
     db.init_app(app)
     jwt.init_app(app)
-    CORS(app)
+    
+    # Configure CORS with more specific settings
+    CORS(app, 
+         resources={r"/api/*": {"origins": app.config.get('CORS_ORIGINS', '*').split(','), 
+                               "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                               "allow_headers": ["Content-Type", "Authorization"]}},
+         supports_credentials=True)
     
     # Register blueprints
     from .routes import init_app
     init_app(app)
+    
+    # Handle OPTIONS requests explicitly for CORS preflight
+    @app.route('/api/<path:path>', methods=['OPTIONS'])
+    @app.route('/api/', methods=['OPTIONS'])
+    @app.route('/api', methods=['OPTIONS'])
+    def options_handler(path=''):
+        return '', 200
     
     # Custom error handlers
     from .utils.error_handlers import register_error_handlers

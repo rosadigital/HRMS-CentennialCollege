@@ -34,7 +34,7 @@ else:
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # CORS configurations
-CORS_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000']
+CORS_ORIGINS = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000')
 
 # Upload configurations
 UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
@@ -47,6 +47,7 @@ class Config:
     JWT_SECRET_KEY = JWT_SECRET_KEY
     JWT_ACCESS_TOKEN_EXPIRES = JWT_ACCESS_TOKEN_EXPIRES
     SQLALCHEMY_TRACK_MODIFICATIONS = SQLALCHEMY_TRACK_MODIFICATIONS
+    CORS_ORIGINS = CORS_ORIGINS
 
 
 class DevelopmentConfig(Config):

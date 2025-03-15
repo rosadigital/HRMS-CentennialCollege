@@ -1,0 +1,9 @@
+@echo off
+echo Starting HRMS Client...
+cd client
+
+echo Installing dependencies...
+npm install
+
+echo Starting React development server...
+npm start 

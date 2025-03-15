@@ -27,8 +27,8 @@ def create_app(config_name='development'):
     CORS(app)
     
     # Register blueprints
-    from .routes import register_blueprints
-    register_blueprints(app)
+    from .routes import init_app
+    init_app(app)
     
     # Custom error handlers
     from .utils.error_handlers import register_error_handlers

@@ -2,6 +2,10 @@ from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from .config import config
+import oracledb
+
+# Configure oracledb to use thin mode (in oracledb 3.0+, thin mode is the default)
+# oracledb.init_mode = oracledb.THIN_MODE  # Not needed in 3.0+
 
 # Initialize extensions
 db = SQLAlchemy()

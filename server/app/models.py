@@ -40,27 +40,6 @@ class User(db.Model):
         }
 
 
-class Country(db.Model):
-    """Country model."""
-    __tablename__ = 'HR_COUNTRIES'
-    
-    COUNTRY_ID = db.Column(db.String(2), primary_key=True)
-    COUNTRY_NAME = db.Column(db.String(40))
-    REGION_ID = db.Column(db.Integer, db.ForeignKey('HR_REGIONS.REGION_ID'))
-    
-    # Relationships
-    region = db.relationship('Region', backref='countries')
-    locations = db.relationship('Location', backref='country')
-    
-    def to_dict(self):
-        return {
-            'country_id': self.COUNTRY_ID,
-            'country_name': self.COUNTRY_NAME,
-            'region_id': self.REGION_ID,
-            'region_name': self.region.REGION_NAME if self.region else None
-        }
-
-
 class Region(db.Model):
     """Region model."""
     __tablename__ = 'HR_REGIONS'
@@ -75,6 +54,26 @@ class Region(db.Model):
         }
 
 
+class Country(db.Model):
+    """Country model."""
+    __tablename__ = 'HR_COUNTRIES'
+    
+    COUNTRY_ID = db.Column(db.String(2), primary_key=True)
+    COUNTRY_NAME = db.Column(db.String(40))
+    REGION_ID = db.Column(db.Integer, db.ForeignKey('HR_REGIONS.REGION_ID'))
+    
+    # Relationships - no backrefs
+    region = db.relationship('Region')
+    
+    def to_dict(self):
+        return {
+            'country_id': self.COUNTRY_ID,
+            'country_name': self.COUNTRY_NAME,
+            'region_id': self.REGION_ID,
+            'region_name': self.region.REGION_NAME if self.region else None
+        }
+
+
 class Location(db.Model):
     """Location model."""
     __tablename__ = 'HR_LOCATIONS'
@@ -86,8 +85,8 @@ class Location(db.Model):
     STATE_PROVINCE = db.Column(db.String(25))
     COUNTRY_ID = db.Column(db.String(2), db.ForeignKey('HR_COUNTRIES.COUNTRY_ID'))
     
-    # Relationships
-    country = db.relationship('Country', backref='locations')
+    # Relationships - no backrefs
+    country = db.relationship('Country')
     
     def to_dict(self):
         return {
@@ -110,8 +109,8 @@ class Department(db.Model):
     MANAGER_ID = db.Column(db.Integer, db.ForeignKey('HR_EMPLOYEES.EMPLOYEE_ID', use_alter=True))
     LOCATION_ID = db.Column(db.Integer, db.ForeignKey('HR_LOCATIONS.LOCATION_ID'))
     
-    # Relationships
-    location = db.relationship('Location', backref='departments')
+    # Relationships - no backrefs
+    location = db.relationship('Location')
     
     def to_dict(self):
         return {
@@ -157,9 +156,9 @@ class Employee(db.Model):
     MANAGER_ID = db.Column(db.Integer, db.ForeignKey('HR_EMPLOYEES.EMPLOYEE_ID', use_alter=True))
     DEPARTMENT_ID = db.Column(db.Integer, db.ForeignKey('HR_DEPARTMENTS.DEPARTMENT_ID'))
     
-    # Relationships
-    department = db.relationship('Department', backref='employees')
-    job = db.relationship('Job', backref='employees')
+    # Relationships - specify foreign_keys to avoid ambiguity
+    department = db.relationship('Department', foreign_keys=[DEPARTMENT_ID])
+    job = db.relationship('Job', foreign_keys=[JOB_ID])
     
     def to_dict(self):
         return {
@@ -189,10 +188,10 @@ class JobHistory(db.Model):
     JOB_ID = db.Column(db.String(10), db.ForeignKey('HR_JOBS.JOB_ID'))
     DEPARTMENT_ID = db.Column(db.Integer, db.ForeignKey('HR_DEPARTMENTS.DEPARTMENT_ID'))
     
-    # Relationships
-    job = db.relationship('Job')
-    department = db.relationship('Department')
-    employee = db.relationship('Employee')
+    # Relationships - specify foreign_keys to avoid ambiguity
+    job = db.relationship('Job', foreign_keys=[JOB_ID])
+    department = db.relationship('Department', foreign_keys=[DEPARTMENT_ID])
+    employee = db.relationship('Employee', foreign_keys=[EMPLOYEE_ID])
     
     def to_dict(self):
         return {

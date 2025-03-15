@@ -21,9 +21,12 @@ if DB_TYPE == 'oracle':
     ORACLE_PORT = os.environ.get('ORACLE_PORT', '1521')
     ORACLE_SID = os.environ.get('ORACLE_SID', 'SQLD')
     
-    # Format: oracle+cx_oracle://username:password@host:port/?service_name=service_name
-    # or: oracle+cx_oracle://username:password@host:port/SID
-    SQLALCHEMY_DATABASE_URI = f"oracle+cx_oracle://{ORACLE_USER}:{ORACLE_PASSWORD}@{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SID}"
+    # Use the simplified connection string format that's working in the example
+    # Format: oracle+oracledb://username:password@host:port/SID
+    SQLALCHEMY_DATABASE_URI = f"oracle+oracledb://{ORACLE_USER}:{ORACLE_PASSWORD}@{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SID}"
+    
+    # Store the simple DSN format for direct connections if needed
+    ORACLE_DSN = f"{ORACLE_HOST}:{ORACLE_PORT}/{ORACLE_SID}"
 else:
     # Default SQLite database for development if Oracle not specified
     base_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))

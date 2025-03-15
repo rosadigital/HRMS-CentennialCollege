@@ -226,6 +226,38 @@ def cleanup(access_token, employee_id, dept_id, job_id):
     except Exception as e:
         print(f"Error during cleanup: {str(e)}")
 
+def test_endpoints():
+    # Test GET endpoints
+    endpoints = [
+        '/employees',
+        '/departments',
+        '/jobs',
+        '/regions',
+        '/countries',
+        '/locations',
+        '/job-grades',
+        '/job-history'
+    ]
+    
+    for endpoint in endpoints:
+        print(f"\nTesting GET {endpoint}")
+        response = requests.get(f"{BASE_URL}{endpoint}")
+        print(f"Status: {response.status_code}")
+        if response.status_code == 200:
+            data = response.json()
+            key = endpoint.strip('/').replace('-', '_')
+            if key in data:
+                print(f"Count: {len(data[key])}")
+                if len(data[key]) > 0:
+                    print(f"First item: {json.dumps(data[key][0], indent=2)[:150]}...")
+    
+    # Test a specific item
+    print("\nTesting GET /departments/10")
+    response = requests.get(f"{BASE_URL}/departments/10")
+    print(f"Status: {response.status_code}")
+    if response.status_code == 200:
+        print(json.dumps(response.json(), indent=2))
+
 def main():
     """Run the API tests."""
     print("Starting API tests...")
@@ -249,6 +281,9 @@ def main():
     
     # Clean up test data
     cleanup(access_token, employee_id, dept_id, job_id)
+    
+    # Test additional endpoints
+    test_endpoints()
     
     print("\nAPI tests completed!")
 

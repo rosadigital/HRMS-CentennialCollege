@@ -103,86 +103,89 @@ class Location(db.Model):
 
 class Department(db.Model):
     """Department model."""
-    __tablename__ = 'hr_departments'
+    __tablename__ = 'departments'
     
-    department_id = db.Column(db.Integer, primary_key=True)
-    department_name = db.Column(db.String(30), nullable=False)
-    manager_id = db.Column(db.Integer, db.ForeignKey('hr_employees.employee_id'))
-    location_id = db.Column(db.Integer, db.ForeignKey('hr_locations.location_id'))
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    employees = db.relationship('Employee', foreign_keys='Employee.department_id', backref='department')
-    manager = db.relationship('Employee', foreign_keys=[manager_id], backref='managed_department')
+    employees = db.relationship('Employee', backref='department', lazy='dynamic')
     
     def to_dict(self):
         return {
-            'department_id': self.department_id,
-            'department_name': self.department_name,
-            'manager_id': self.manager_id,
-            'manager_name': f"{self.manager.first_name} {self.manager.last_name}" if self.manager else None,
-            'location_id': self.location_id,
-            'location': self.location.city if self.location else None,
-            'employee_count': len(self.employees) if self.employees else 0
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'employee_count': self.employees.count()
         }
 
 
 class Job(db.Model):
     """Job model for job positions."""
-    __tablename__ = 'hr_jobs'
+    __tablename__ = 'jobs'
     
-    job_id = db.Column(db.String(10), primary_key=True)
-    job_title = db.Column(db.String(35), nullable=False)
-    min_salary = db.Column(db.Integer)
-    max_salary = db.Column(db.Integer)
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    min_salary = db.Column(db.Float)
+    max_salary = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
-    employees = db.relationship('Employee', backref='job')
+    employees = db.relationship('Employee', backref='job', lazy='dynamic')
     
     def to_dict(self):
         return {
-            'job_id': self.job_id,
-            'job_title': self.job_title,
+            'id': self.id,
+            'title': self.title,
+            'description': self.description,
             'min_salary': self.min_salary,
-            'max_salary': self.max_salary
+            'max_salary': self.max_salary,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
 
 class Employee(db.Model):
     """Employee model."""
-    __tablename__ = 'hr_employees'
+    __tablename__ = 'employees'
     
-    employee_id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(20))
-    last_name = db.Column(db.String(25), nullable=False)
-    email = db.Column(db.String(25), unique=True, nullable=False)
-    phone_number = db.Column(db.String(20))
-    hire_date = db.Column(db.Date, nullable=False)
-    job_id = db.Column(db.String(10), db.ForeignKey('hr_jobs.job_id'), nullable=False)
-    salary = db.Column(db.Integer)
-    commission_pct = db.Column(db.Integer)
-    manager_id = db.Column(db.Integer, db.ForeignKey('hr_employees.employee_id'))
-    department_id = db.Column(db.Integer, db.ForeignKey('hr_departments.department_id'))
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20))
+    hire_date = db.Column(db.Date, nullable=False, default=datetime.utcnow().date)
+    salary = db.Column(db.Float)
     
-    # Relationships
-    subordinates = db.relationship('Employee', backref=db.backref('manager', remote_side=[employee_id]))
-    job_history = db.relationship('JobHistory', backref='employee')
+    # Foreign keys
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
+    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'))
+    
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def to_dict(self):
         return {
-            'employee_id': self.employee_id,
+            'id': self.id,
             'first_name': self.first_name,
             'last_name': self.last_name,
             'email': self.email,
-            'phone_number': self.phone_number,
+            'phone': self.phone,
             'hire_date': self.hire_date.isoformat() if self.hire_date else None,
-            'job_id': self.job_id,
-            'job_title': self.job.job_title if self.job else None,
             'salary': self.salary,
-            'commission_pct': self.commission_pct,
-            'manager_id': self.manager_id,
-            'manager_name': f"{self.manager.first_name} {self.manager.last_name}" if self.manager else None,
             'department_id': self.department_id,
-            'department_name': self.department.department_name if self.department else None
+            'department_name': self.department.name if self.department else None,
+            'job_id': self.job_id,
+            'job_title': self.job.title if self.job else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
 
 

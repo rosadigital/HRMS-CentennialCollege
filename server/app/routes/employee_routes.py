@@ -1,23 +1,22 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required
 from marshmallow import Schema, fields, validate, ValidationError
 from ..models import Employee, Department, Job
 from .. import db
+from datetime import datetime
 
 employee_bp = Blueprint('employee', __name__)
 
 # Schema for request validation
 class EmployeeSchema(Schema):
-    first_name = fields.String(validate=validate.Length(max=20))
-    last_name = fields.String(required=True, validate=validate.Length(min=1, max=25))
-    email = fields.Email(required=True, validate=validate.Length(max=25))
-    phone_number = fields.String(validate=validate.Length(max=20))
-    hire_date = fields.Date(required=True)
-    job_id = fields.String(required=True)
-    salary = fields.Integer()
-    commission_pct = fields.Integer()
-    manager_id = fields.Integer()
+    first_name = fields.String(required=True, validate=validate.Length(min=1, max=50))
+    last_name = fields.String(required=True, validate=validate.Length(min=1, max=50))
+    email = fields.Email(required=True)
+    phone = fields.String(validate=validate.Length(max=20))
+    hire_date = fields.Date()
+    salary = fields.Float(validate=validate.Range(min=0))
     department_id = fields.Integer()
+    job_id = fields.Integer()
 
 employee_schema = EmployeeSchema()
 
@@ -35,7 +34,7 @@ def get_employees():
 @jwt_required()
 def get_employee(employee_id):
     """Get a single employee by ID."""
-    employee = Employee.query.filter_by(employee_id=employee_id).first_or_404()
+    employee = Employee.query.get_or_404(employee_id)
     return jsonify({
         'success': True,
         'employee': employee.to_dict()
@@ -57,9 +56,16 @@ def create_employee():
             'errors': err.messages
         }), 400
     
+    # Check if email already exists
+    if Employee.query.filter_by(email=validated_data['email']).first():
+        return jsonify({
+            'success': False,
+            'message': f"Employee with email {validated_data['email']} already exists"
+        }), 400
+    
     # Check if department exists
     if 'department_id' in validated_data and validated_data['department_id']:
-        department = Department.query.filter_by(department_id=validated_data['department_id']).first()
+        department = Department.query.get(validated_data['department_id'])
         if not department:
             return jsonify({
                 'success': False,
@@ -68,29 +74,16 @@ def create_employee():
     
     # Check if job exists
     if 'job_id' in validated_data and validated_data['job_id']:
-        job = Job.query.filter_by(job_id=validated_data['job_id']).first()
+        job = Job.query.get(validated_data['job_id'])
         if not job:
             return jsonify({
                 'success': False,
                 'message': f"Job with ID {validated_data['job_id']} not found"
             }), 404
     
-    # Check if manager exists
-    if 'manager_id' in validated_data and validated_data['manager_id']:
-        manager = Employee.query.filter_by(employee_id=validated_data['manager_id']).first()
-        if not manager:
-            return jsonify({
-                'success': False,
-                'message': f"Manager with ID {validated_data['manager_id']} not found"
-            }), 404
-    
-    # Check if email is already used
-    existing_employee = Employee.query.filter_by(email=validated_data['email']).first()
-    if existing_employee:
-        return jsonify({
-            'success': False,
-            'message': f"Email {validated_data['email']} is already in use"
-        }), 400
+    # Set default hire_date if not provided
+    if 'hire_date' not in validated_data or not validated_data['hire_date']:
+        validated_data['hire_date'] = datetime.utcnow().date()
     
     # Create the employee
     new_employee = Employee(**validated_data)
@@ -107,7 +100,7 @@ def create_employee():
 @jwt_required()
 def update_employee(employee_id):
     """Update an existing employee."""
-    employee = Employee.query.filter_by(employee_id=employee_id).first_or_404()
+    employee = Employee.query.get_or_404(employee_id)
     data = request.get_json()
     
     # Validate input
@@ -120,47 +113,31 @@ def update_employee(employee_id):
             'errors': err.messages
         }), 400
     
-    # Check if department exists if being updated
+    # Check if email already exists
+    if 'email' in validated_data and validated_data['email'] != employee.email:
+        if Employee.query.filter_by(email=validated_data['email']).first():
+            return jsonify({
+                'success': False,
+                'message': f"Employee with email {validated_data['email']} already exists"
+            }), 400
+    
+    # Check if department exists
     if 'department_id' in validated_data and validated_data['department_id']:
-        department = Department.query.filter_by(department_id=validated_data['department_id']).first()
+        department = Department.query.get(validated_data['department_id'])
         if not department:
             return jsonify({
                 'success': False,
                 'message': f"Department with ID {validated_data['department_id']} not found"
             }), 404
     
-    # Check if job exists if being updated
+    # Check if job exists
     if 'job_id' in validated_data and validated_data['job_id']:
-        job = Job.query.filter_by(job_id=validated_data['job_id']).first()
+        job = Job.query.get(validated_data['job_id'])
         if not job:
             return jsonify({
                 'success': False,
                 'message': f"Job with ID {validated_data['job_id']} not found"
             }), 404
-    
-    # Check if manager exists if being updated
-    if 'manager_id' in validated_data and validated_data['manager_id']:
-        manager = Employee.query.filter_by(employee_id=validated_data['manager_id']).first()
-        if not manager:
-            return jsonify({
-                'success': False,
-                'message': f"Manager with ID {validated_data['manager_id']} not found"
-            }), 404
-        # Prevent circular management relationship
-        if manager.employee_id == employee_id:
-            return jsonify({
-                'success': False,
-                'message': "An employee cannot be their own manager"
-            }), 400
-    
-    # Check if email is already used by another employee
-    if 'email' in validated_data and validated_data['email'] != employee.email:
-        existing_employee = Employee.query.filter_by(email=validated_data['email']).first()
-        if existing_employee:
-            return jsonify({
-                'success': False,
-                'message': f"Email {validated_data['email']} is already in use"
-            }), 400
     
     # Update the employee
     for key, value in validated_data.items():
@@ -178,23 +155,7 @@ def update_employee(employee_id):
 @jwt_required()
 def delete_employee(employee_id):
     """Delete an employee."""
-    employee = Employee.query.filter_by(employee_id=employee_id).first_or_404()
-    
-    # Check if this employee is a manager for any department
-    manages_dept = Department.query.filter_by(manager_id=employee_id).first()
-    if manages_dept:
-        return jsonify({
-            'success': False,
-            'message': f"Cannot delete employee. They are currently the manager of {manages_dept.department_name} department."
-        }), 400
-    
-    # Check if this employee is a manager for other employees
-    has_subordinates = Employee.query.filter_by(manager_id=employee_id).first()
-    if has_subordinates:
-        return jsonify({
-            'success': False,
-            'message': "Cannot delete employee. They are currently a manager for other employees."
-        }), 400
+    employee = Employee.query.get_or_404(employee_id)
     
     try:
         db.session.delete(employee)

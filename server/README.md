@@ -1,133 +1,107 @@
-# HRMS Server
+# Human Resource Management System (HRMS) API
 
-Backend API for the Human Resource Management System (HRMS), built with Flask.
+This is the backend API for the Human Resource Management System. It provides endpoints for managing employees, departments, jobs, and user authentication.
 
-## Features
+## Requirements
 
-- RESTful API for HRMS resources
-- JWT-based authentication
-- Database models for employees, departments, jobs, and users
-- Data validation with Marshmallow
-- Error handling
+- Python 3.8+
+- Flask and extensions
+- Oracle database
 
-## Tech Stack
+## Installation
 
-- Flask 2.3.3
-- SQLAlchemy 2.0.25
-- Flask-JWT-Extended 4.5.3
-- Marshmallow 3.20.1
-- SQLite (default) with option to use other databases
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.8 or higher
-- pip (Python package installer)
-
-### Installation
-
-1. Clone the repository
-2. Navigate to the server directory:
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd HRMS-CentennialCollege/server
    ```
-   cd server
-   ```
-3. Create a virtual environment:
-   ```
+
+2. Create a virtual environment and activate it:
+   ```bash
    python -m venv venv
+   # On Windows
+   venv\Scripts\activate
+   # On MacOS/Linux
+   source venv/bin/activate
    ```
-4. Activate the virtual environment:
-   - On Windows:
-     ```
-     venv\Scripts\activate
-     ```
-   - On macOS/Linux:
-     ```
-     source venv/bin/activate
-     ```
-5. Install dependencies:
-   ```
+
+3. Install dependencies:
+   ```bash
    pip install -r requirements.txt
    ```
 
-### Environment Setup
+4. Configure the database connection:
+   - Edit the `app/config.py` file and update the database connection URL with your Oracle database credentials:
+     ```python
+     SQLALCHEMY_DATABASE_URI = 'oracle://<username>:<password>@<host>:<port>/<service_name>'
+     ```
 
-Create a `.env` file in the server directory with the following variables:
+## Running the Application
 
+1. Initialize the database:
+   ```bash
+   flask db init
+   flask db migrate -m "Initial migration"
+   flask db upgrade
+   ```
+
+2. Start the development server:
+   ```bash
+   python run.py
+   ```
+
+   The API will be available at `http://localhost:5000/api`.
+
+## Testing the API
+
+A test script is provided to verify the API functionality. To run the tests:
+
+```bash
+python test_api.py
 ```
-FLASK_APP=run.py
-FLASK_ENV=development
-FLASK_DEBUG=1
-SECRET_KEY=your-secret-key
-JWT_SECRET_KEY=your-jwt-secret-key
-```
 
-### Database Setup
-
-Initialize and seed the database with sample data:
-
-```
-flask init-db
-flask seed-db
-```
-
-### Running the Application
-
-To start the development server:
-
-```
-flask run
-```
-
-The API will be available at [http://localhost:5000/api](http://localhost:5000/api).
+This will create test data, test all the API endpoints, and clean up the test data.
 
 ## API Endpoints
 
 ### Authentication
-- `POST /api/auth/login` - Login and get JWT token
+
 - `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login and get access token
+- `GET /api/auth/me` - Get current authenticated user
 
 ### Employees
-- `GET /api/employees` - Get all employees
+
+- `GET /api/employees/` - Get all employees
 - `GET /api/employees/<id>` - Get a specific employee
-- `POST /api/employees` - Create a new employee
-- `PUT /api/employees/<id>` - Update an employee
+- `POST /api/employees/` - Create a new employee
+- `PUT /api/employees/<id>` - Update an existing employee
 - `DELETE /api/employees/<id>` - Delete an employee
 
 ### Departments
-- `GET /api/departments` - Get all departments
+
+- `GET /api/departments/` - Get all departments
 - `GET /api/departments/<id>` - Get a specific department
-- `POST /api/departments` - Create a new department
-- `PUT /api/departments/<id>` - Update a department
+- `POST /api/departments/` - Create a new department
+- `PUT /api/departments/<id>` - Update an existing department
 - `DELETE /api/departments/<id>` - Delete a department
 
 ### Jobs
-- `GET /api/jobs` - Get all jobs
+
+- `GET /api/jobs/` - Get all jobs
 - `GET /api/jobs/<id>` - Get a specific job
-- `POST /api/jobs` - Create a new job
-- `PUT /api/jobs/<id>` - Update a job
+- `POST /api/jobs/` - Create a new job
+- `PUT /api/jobs/<id>` - Update an existing job
 - `DELETE /api/jobs/<id>` - Delete a job
 
-## Testing
+## Authentication
 
-Run the tests using pytest:
+All API endpoints (except login and register) require authentication using JWT tokens. Include the token in the Authorization header:
 
 ```
-pytest
+Authorization: Bearer <token>
 ```
 
-## Production Deployment
+## Error Handling
 
-For production deployment:
-
-1. Set appropriate environment variables
-2. Use a production WSGI server like Gunicorn:
-   ```
-   gunicorn 'run:app'
-   ```
-3. Consider using a more robust database like PostgreSQL
-
-## Default Admin User
-
-- Email: admin@example.com
-- Password: password 
+The API returns appropriate HTTP status codes and JSON responses for validation errors, not found errors, and other exceptions. 

@@ -1,45 +1,53 @@
 import React from 'react';
-import { ResponsiveBar } from '@nivo/bar';
-import { ResponsivePie } from '@nivo/pie';
-import { Users, Building2, Briefcase, TrendingUp } from 'lucide-react';
+import { ArrowUp, TrendingUp, Users, Briefcase } from 'lucide-react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 
-// Mock data for the charts
+// Mock data
 const departmentData = [
-  { id: 'HR', value: 12 },
-  { id: 'Engineering', value: 25 },
-  { id: 'Marketing', value: 18 },
-  { id: 'Finance', value: 15 },
-  { id: 'Operations', value: 20 },
+  { department: 'Engineering', percentage: 32, color: '#26D07C' },
+  { department: 'Sales', percentage: 24, color: '#1E293B' },
+  { department: 'Marketing', percentage: 18, color: '#E2E8F0' },
+  { department: 'HR', percentage: 12, color: '#EF4444' },
 ];
 
-const jobTrendData = [
-  { month: 'Jan', hired: 5, left: 2 },
-  { month: 'Feb', hired: 8, left: 3 },
-  { month: 'Mar', hired: 12, left: 5 },
-  { month: 'Apr', hired: 6, left: 2 },
-  { month: 'May', hired: 10, left: 4 },
-  { month: 'Jun', hired: 15, left: 7 },
+const recentHires = [
+  {
+    id: 1,
+    name: 'Sarah Johnson',
+    position: 'Senior Developer',
+    timeAgo: 'Today',
+    avatar: 'https://randomuser.me/api/portraits/women/44.jpg'
+  },
+  {
+    id: 2,
+    name: 'Michael Chen',
+    position: 'Product Manager',
+    timeAgo: 'Yesterday',
+    avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
+  },
+  {
+    id: 3,
+    name: 'Emily Wilson',
+    position: 'UX Designer',
+    timeAgo: '2 days ago',
+    avatar: 'https://randomuser.me/api/portraits/women/68.jpg'
+  }
 ];
 
 const Dashboard = () => {
-  // StatCard component for displaying statistics
-  const StatCard = ({ icon, title, value, change, changeType }) => {
+  // Stat card component
+  const StatCard = ({ icon, color, title, value, percentage, trend }) => {
     return (
-      <div className="card flex items-start">
-        <div className="p-3 rounded-full bg-primary-100 text-primary-600 mr-4">
-          {icon}
+      <div className="bg-white rounded-lg p-5 shadow-sm">
+        <div className="flex justify-between">
+          <div>{icon}</div>
+          <div className={`flex items-center gap-1 text-sm ${trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+            <ArrowUp className={`w-3 h-3 ${trend === 'up' ? '' : 'rotate-180'}`} />
+            <span>{percentage}%</span>
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
-          <p className="text-2xl font-bold my-1">{value}</p>
-          <p className={`text-sm ${changeType === 'positive' ? 'text-green-500' : 'text-red-500'}`}>
-            <span className="flex items-center">
-              <TrendingUp size={16} className="mr-1" />
-              {change}
-            </span>
-          </p>
-        </div>
+        <h3 className="text-gray-500 text-sm mt-4">{title}</h3>
+        <p className="text-3xl font-bold mt-1">{value}</p>
       </div>
     );
   };
@@ -47,174 +55,139 @@ const Dashboard = () => {
   return (
     <DashboardLayout>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-        <p className="text-gray-600">Welcome to the HRMS Dashboard</p>
+        <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+        {/* <p className="text-gray-600">Welcome to the HRMS Dashboard</p> */}
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
         <StatCard 
-          icon={<Users size={24} />}
+          icon={<Users className="text-green-500" />}
+          color="green"
           title="Total Employees"
-          value="90"
-          change="+5% since last month"
-          changeType="positive"
+          value="2,451"
+          percentage="12.5"
+          trend="up"
         />
         <StatCard 
-          icon={<Building2 size={24} />}
-          title="Departments"
-          value="5"
-          change="No change"
-          changeType="neutral"
+          icon={<Users className="text-green-500" />}
+          color="green"
+          title="New Hires (2025)"
+          value="145"
+          percentage="8.3"
+          trend="up"
         />
         <StatCard 
-          icon={<Briefcase size={24} />}
+          icon={<TrendingUp className="text-red-500" />}
+          color="red"
+          title="Turnover Rate"
+          value="4.8%"
+          percentage="1.2"
+          trend="up"
+        />
+        <StatCard 
+          icon={<Briefcase className="text-green-500" />}
+          color="green"
           title="Open Positions"
-          value="12"
-          change="+2 since last month"
-          changeType="positive"
-        />
-        <StatCard 
-          icon={<Users size={24} />}
-          title="New Hires"
-          value="15"
-          change="+8 since last month"
-          changeType="positive"
+          value="38"
+          percentage="5.5"
+          trend="up"
         />
       </div>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div className="card">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Employees by Department</h2>
-          <div className="h-80">
-            <ResponsivePie
-              data={departmentData}
-              margin={{ top: 40, right: 80, bottom: 80, left: 80 }}
-              innerRadius={0.5}
-              padAngle={0.7}
-              cornerRadius={3}
-              activeOuterRadiusOffset={8}
-              colors={{ scheme: 'category10' }}
-              borderWidth={1}
-              borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
-              arcLinkLabelsSkipAngle={10}
-              arcLinkLabelsTextColor="#333333"
-              arcLinkLabelsThickness={2}
-              arcLinkLabelsColor={{ from: 'color' }}
-              arcLabelsSkipAngle={10}
-              arcLabelsTextColor={{ from: 'color', modifiers: [['darker', 2]] }}
-              legends={[
-                {
-                  anchor: 'bottom',
-                  direction: 'row',
-                  justify: false,
-                  translateX: 0,
-                  translateY: 56,
-                  itemsSpacing: 0,
-                  itemWidth: 100,
-                  itemHeight: 18,
-                  itemTextColor: '#999',
-                  itemDirection: 'left-to-right',
-                  itemOpacity: 1,
-                  symbolSize: 18,
-                  symbolShape: 'circle',
-                  effects: [
-                    {
-                      on: 'hover',
-                      style: {
-                        itemTextColor: '#000'
-                      }
-                    }
-                  ]
-                }
-              ]}
-            />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Department Distribution */}
+        <div className="bg-white rounded-lg p-5 shadow-sm lg:col-span-2">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-medium">Department Distribution</h2>
+            <select className="border border-gray-200 rounded-md px-3 py-1 text-sm">
+              <option>Last 30 Days</option>
+              <option>Last 60 Days</option>
+              <option>Last 90 Days</option>
+            </select>
+          </div>
+          
+          <div className="flex items-end h-64 gap-16 pl-4">
+            {departmentData.map((dept) => (
+              <div key={dept.department} className="flex flex-col items-center">
+                <div 
+                  style={{ 
+                    height: `${dept.percentage * 2}px`, 
+                    backgroundColor: dept.color, 
+                    width: '24px'
+                  }}
+                  className="rounded-t-sm"
+                ></div>
+                <div className="mt-3 text-center">
+                  <p className="text-xs text-gray-500">{dept.department}</p>
+                  <p className="font-medium">{dept.percentage}%</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="card">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Hiring Trends</h2>
-          <div className="h-80">
-            <ResponsiveBar
-              data={jobTrendData}
-              keys={['hired', 'left']}
-              indexBy="month"
-              margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
-              padding={0.3}
-              groupMode="grouped"
-              valueScale={{ type: 'linear' }}
-              indexScale={{ type: 'band', round: true }}
-              colors={{ scheme: 'set2' }}
-              borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
-              axisTop={null}
-              axisRight={null}
-              axisBottom={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: 'Month',
-                legendPosition: 'middle',
-                legendOffset: 32
-              }}
-              axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: 'Count',
-                legendPosition: 'middle',
-                legendOffset: -40
-              }}
-              labelSkipWidth={12}
-              labelSkipHeight={12}
-              labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
-              legends={[
-                {
-                  dataFrom: 'keys',
-                  anchor: 'bottom-right',
-                  direction: 'column',
-                  justify: false,
-                  translateX: 120,
-                  translateY: 0,
-                  itemsSpacing: 2,
-                  itemWidth: 100,
-                  itemHeight: 20,
-                  itemDirection: 'left-to-right',
-                  itemOpacity: 0.85,
-                  symbolSize: 20,
-                  effects: [
-                    {
-                      on: 'hover',
-                      style: {
-                        itemOpacity: 1
-                      }
-                    }
-                  ]
-                }
-              ]}
-            />
+        {/* Recent Hires */}
+        <div className="bg-white rounded-lg p-5 shadow-sm">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="font-medium">Recent Hires</h2>
+            <a href="#" className="text-green-500 text-sm">View All</a>
+          </div>
+          
+          <div className="space-y-4">
+            {recentHires.map((hire) => (
+              <div key={hire.id} className="flex items-center justify-between py-2">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={hire.avatar} 
+                    alt={hire.name} 
+                    className="w-10 h-10 rounded-full"
+                  />
+                  <div>
+                    <p className="font-medium">{hire.name}</p>
+                    <p className="text-sm text-gray-500">{hire.position}</p>
+                  </div>
+                </div>
+                <span className="text-sm text-gray-500">{hire.timeAgo}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
-      {/* Recent Activity */}
-      <div className="card">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Recent Activity</h2>
-        <div className="space-y-4">
-          {[1, 2, 3, 4, 5].map((item) => (
-            <div key={item} className="flex items-center p-3 border-b border-gray-100 last:border-0">
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-4">
-                <Users size={20} className="text-gray-500" />
-              </div>
-              <div>
-                <p className="font-medium">New employee joined</p>
-                <p className="text-sm text-gray-500">John Doe was added to the Engineering department</p>
-              </div>
-              <div className="ml-auto text-sm text-gray-400">
-                2 hours ago
-              </div>
+      {/* AI-Powered Insights */}
+      <div className="mt-8">
+        <h2 className="flex items-center gap-2 font-medium mb-4">
+          <span className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+            <span className="w-3 h-3 rounded-full bg-green-500"></span>
+          </span>
+          AI-Powered Insights
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="bg-green-50 p-5 rounded-lg border border-green-100">
+            <div className="flex items-center gap-2 mb-2">
+              <TrendingUp className="text-green-500 w-4 h-4" />
+              <h3 className="font-medium text-green-700">Positive Trend</h3>
             </div>
-          ))}
+            <p className="text-sm text-gray-700">
+              Employee satisfaction has increased by 15% in the last quarter, primarily due to new wellness initiatives.
+            </p>
+          </div>
+          
+          <div className="bg-red-50 p-5 rounded-lg border border-red-100">
+            <div className="flex items-center gap-2 mb-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-red-500">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <h3 className="font-medium text-red-700">Action Required</h3>
+            </div>
+            <p className="text-sm text-gray-700">
+              Engineering department showing signs of increased overtime hours. Consider reviewing workload distribution.
+            </p>
+          </div>
         </div>
       </div>
     </DashboardLayout>

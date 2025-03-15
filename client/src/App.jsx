@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 
 // Pages
@@ -14,8 +14,26 @@ import Profile from './pages/Profile';
 // import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
-  // For demo purposes, we'll consider the user as logged in
-  const isAuthenticated = false; // This would normally come from a context or similar
+  // Check for authentication token in localStorage
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  useEffect(() => {
+    // Check if token exists in localStorage
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+    
+    // Listen for storage events (like when token is added or removed)
+    const handleStorageChange = () => {
+      const token = localStorage.getItem('token');
+      setIsAuthenticated(!!token);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   return (
     // <AuthProvider>

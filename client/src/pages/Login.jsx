@@ -21,14 +21,19 @@ const Login = () => {
     setError('');
 
     try {
-      // For demo purposes, we'll simulate a successful login
-      // const response = await authService.login(credentials);
-      // localStorage.setItem('token', response.data.token);
-      
-      // Simulated login for demo
-      localStorage.setItem('token', 'demo-token');
-      
-      navigate('/dashboard');
+      // Check for demo credentials
+      if (credentials.email === 'admin@example.com' && credentials.password === 'password') {
+        // Simulated login for demo
+        localStorage.setItem('token', 'demo-token');
+        
+        // Dispatch a storage event to update authentication state across tabs
+        window.dispatchEvent(new Event('storage'));
+        
+        navigate('/dashboard');
+      } else {
+        // Show error for incorrect credentials
+        setError('Invalid email or password. Try admin@example.com / password');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to login. Please try again.');
     } finally {

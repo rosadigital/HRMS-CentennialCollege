@@ -1,33 +1,64 @@
 from flask import Blueprint, request, jsonify
 from ..models import Location, Department
 from .. import db
+from ..utils.db_utils import get_locations, get_location, get_location_options
 
 location_bp = Blueprint('location', __name__)
 
 @location_bp.route('/', methods=['GET'])
-def get_locations():
-    """Get all locations."""
-    locations = Location.query.all()
-    return jsonify({
-        'success': True,
-        'locations': [location.to_dict() for location in locations]
-    }), 200
+def get_locations_route():
+    """Get all locations using direct connection approach."""
+    try:
+        locations_data = get_locations()
+        return jsonify({
+            'success': True,
+            'locations': locations_data
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e),
+            'error': 500
+        }), 500
 
 @location_bp.route('/<int:location_id>', methods=['GET'])
-def get_location(location_id):
-    """Get a single location by ID."""
-    location = Location.query.get_or_404(location_id)
-    
-    # Get departments at this location
-    departments = Department.query.filter_by(LOCATION_ID=location_id).all()
-    
-    result = location.to_dict()
-    result['departments'] = [department.to_dict() for department in departments]
-    
-    return jsonify({
-        'success': True,
-        'location': result
-    }), 200
+def get_location_route(location_id):
+    """Get a single location by ID using direct connection approach."""
+    try:
+        location_data = get_location(location_id)
+        if not location_data:
+            return jsonify({
+                'success': False,
+                'message': f'Location with ID {location_id} not found',
+                'error': 404
+            }), 404
+        
+        return jsonify({
+            'success': True,
+            'location': location_data
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e),
+            'error': 500
+        }), 500
+
+@location_bp.route('/options', methods=['GET'])
+def get_location_options_route():
+    """Get all locations as options for dropdown."""
+    try:
+        options = get_location_options()
+        return jsonify({
+            'success': True,
+            'options': options
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': str(e),
+            'error': 500
+        }), 500
 
 @location_bp.route('/', methods=['POST'])
 def create_location():

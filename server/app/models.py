@@ -42,11 +42,11 @@ class User(db.Model):
 
 class Country(db.Model):
     """Country model."""
-    __tablename__ = 'hr_countries'
+    __tablename__ = 'HR_COUNTRIES'
     
-    country_id = db.Column(db.String(2), primary_key=True)
-    country_name = db.Column(db.String(40))
-    region_id = db.Column(db.Integer, db.ForeignKey('hr_regions.region_id'))
+    COUNTRY_ID = db.Column(db.String(2), primary_key=True)
+    COUNTRY_NAME = db.Column(db.String(40))
+    REGION_ID = db.Column(db.Integer, db.ForeignKey('HR_REGIONS.REGION_ID'))
     
     # Relationships
     region = db.relationship('Region', backref='countries')
@@ -54,178 +54,170 @@ class Country(db.Model):
     
     def to_dict(self):
         return {
-            'country_id': self.country_id,
-            'country_name': self.country_name,
-            'region_id': self.region_id,
-            'region_name': self.region.region_name if self.region else None
+            'country_id': self.COUNTRY_ID,
+            'country_name': self.COUNTRY_NAME,
+            'region_id': self.REGION_ID,
+            'region_name': self.region.REGION_NAME if self.region else None
         }
 
 
 class Region(db.Model):
     """Region model."""
-    __tablename__ = 'hr_regions'
+    __tablename__ = 'HR_REGIONS'
     
-    region_id = db.Column(db.Integer, primary_key=True)
-    region_name = db.Column(db.String(25))
+    REGION_ID = db.Column(db.Integer, primary_key=True)
+    REGION_NAME = db.Column(db.String(25))
     
     def to_dict(self):
         return {
-            'region_id': self.region_id,
-            'region_name': self.region_name
+            'region_id': self.REGION_ID,
+            'region_name': self.REGION_NAME
         }
 
 
 class Location(db.Model):
     """Location model."""
-    __tablename__ = 'hr_locations'
+    __tablename__ = 'HR_LOCATIONS'
     
-    location_id = db.Column(db.Integer, primary_key=True)
-    street_address = db.Column(db.String(40))
-    postal_code = db.Column(db.String(12))
-    city = db.Column(db.String(30))
-    state_province = db.Column(db.String(25))
-    country_id = db.Column(db.String(2), db.ForeignKey('hr_countries.country_id'))
+    LOCATION_ID = db.Column(db.Integer, primary_key=True)
+    STREET_ADDRESS = db.Column(db.String(40))
+    POSTAL_CODE = db.Column(db.String(12))
+    CITY = db.Column(db.String(30))
+    STATE_PROVINCE = db.Column(db.String(25))
+    COUNTRY_ID = db.Column(db.String(2), db.ForeignKey('HR_COUNTRIES.COUNTRY_ID'))
     
     # Relationships
-    departments = db.relationship('Department', backref='location')
+    country = db.relationship('Country', backref='locations')
     
     def to_dict(self):
         return {
-            'location_id': self.location_id,
-            'street_address': self.street_address,
-            'postal_code': self.postal_code,
-            'city': self.city,
-            'state_province': self.state_province,
-            'country_id': self.country_id,
-            'country_name': self.country.country_name if self.country else None
+            'location_id': self.LOCATION_ID,
+            'street_address': self.STREET_ADDRESS,
+            'postal_code': self.POSTAL_CODE,
+            'city': self.CITY,
+            'state_province': self.STATE_PROVINCE,
+            'country_id': self.COUNTRY_ID,
+            'country_name': self.country.COUNTRY_NAME if self.country else None
         }
 
 
 class Department(db.Model):
     """Department model."""
-    __tablename__ = 'departments'
+    __tablename__ = 'HR_DEPARTMENTS'
     
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    DEPARTMENT_ID = db.Column(db.Integer, primary_key=True)
+    DEPARTMENT_NAME = db.Column(db.String(30))
+    MANAGER_ID = db.Column(db.Integer, db.ForeignKey('HR_EMPLOYEES.EMPLOYEE_ID', use_alter=True))
+    LOCATION_ID = db.Column(db.Integer, db.ForeignKey('HR_LOCATIONS.LOCATION_ID'))
     
     # Relationships
-    employees = db.relationship('Employee', backref='department', lazy='dynamic')
+    location = db.relationship('Location', backref='departments')
     
     def to_dict(self):
         return {
-            'id': self.id,
-            'name': self.name,
-            'description': self.description,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
-            'employee_count': self.employees.count()
+            'department_id': self.DEPARTMENT_ID,
+            'department_name': self.DEPARTMENT_NAME,
+            'manager_id': self.MANAGER_ID,
+            'location_id': self.LOCATION_ID,
+            'location_city': self.location.CITY if self.location else None
         }
 
 
 class Job(db.Model):
-    """Job model for job positions."""
-    __tablename__ = 'jobs'
+    """Job model."""
+    __tablename__ = 'HR_JOBS'
     
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    min_salary = db.Column(db.Float)
-    max_salary = db.Column(db.Float)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    employees = db.relationship('Employee', backref='job', lazy='dynamic')
+    JOB_ID = db.Column(db.String(10), primary_key=True)
+    JOB_TITLE = db.Column(db.String(35))
+    MIN_SALARY = db.Column(db.Integer)
+    MAX_SALARY = db.Column(db.Integer)
     
     def to_dict(self):
         return {
-            'id': self.id,
-            'title': self.title,
-            'description': self.description,
-            'min_salary': self.min_salary,
-            'max_salary': self.max_salary,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'job_id': self.JOB_ID,
+            'job_title': self.JOB_TITLE,
+            'min_salary': self.MIN_SALARY,
+            'max_salary': self.MAX_SALARY
         }
 
 
 class Employee(db.Model):
     """Employee model."""
-    __tablename__ = 'employees'
+    __tablename__ = 'HR_EMPLOYEES'
     
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(50), nullable=False)
-    last_name = db.Column(db.String(50), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    phone = db.Column(db.String(20))
-    hire_date = db.Column(db.Date, nullable=False, default=datetime.utcnow().date)
-    salary = db.Column(db.Float)
+    EMPLOYEE_ID = db.Column(db.Integer, primary_key=True)
+    FIRST_NAME = db.Column(db.String(20))
+    LAST_NAME = db.Column(db.String(25))
+    EMAIL = db.Column(db.String(25), unique=True)
+    PHONE_NUMBER = db.Column(db.String(20))
+    HIRE_DATE = db.Column(db.Date)
+    JOB_ID = db.Column(db.String(10), db.ForeignKey('HR_JOBS.JOB_ID'))
+    SALARY = db.Column(db.Float)
+    COMMISSION_PCT = db.Column(db.Float)
+    MANAGER_ID = db.Column(db.Integer, db.ForeignKey('HR_EMPLOYEES.EMPLOYEE_ID', use_alter=True))
+    DEPARTMENT_ID = db.Column(db.Integer, db.ForeignKey('HR_DEPARTMENTS.DEPARTMENT_ID'))
     
-    # Foreign keys
-    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'))
-    job_id = db.Column(db.Integer, db.ForeignKey('jobs.id'))
-    
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Relationships
+    department = db.relationship('Department', backref='employees')
+    job = db.relationship('Job', backref='employees')
     
     def to_dict(self):
         return {
-            'id': self.id,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'email': self.email,
-            'phone': self.phone,
-            'hire_date': self.hire_date.isoformat() if self.hire_date else None,
-            'salary': self.salary,
-            'department_id': self.department_id,
-            'department_name': self.department.name if self.department else None,
-            'job_id': self.job_id,
-            'job_title': self.job.title if self.job else None,
-            'created_at': self.created_at.isoformat() if self.created_at else None,
-            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+            'employee_id': self.EMPLOYEE_ID,
+            'first_name': self.FIRST_NAME,
+            'last_name': self.LAST_NAME,
+            'email': self.EMAIL,
+            'phone_number': self.PHONE_NUMBER,
+            'hire_date': self.HIRE_DATE.isoformat() if self.HIRE_DATE else None,
+            'job_id': self.JOB_ID,
+            'job_title': self.job.JOB_TITLE if self.job else None,
+            'salary': self.SALARY,
+            'commission_pct': self.COMMISSION_PCT,
+            'manager_id': self.MANAGER_ID,
+            'department_id': self.DEPARTMENT_ID,
+            'department_name': self.department.DEPARTMENT_NAME if self.department else None
         }
 
 
 class JobHistory(db.Model):
-    """Job History model to track employee job changes."""
-    __tablename__ = 'hr_job_history'
+    """Job History model."""
+    __tablename__ = 'HR_JOB_HISTORY'
     
-    employee_id = db.Column(db.Integer, db.ForeignKey('hr_employees.employee_id'), primary_key=True)
-    start_date = db.Column(db.Date, primary_key=True)
-    end_date = db.Column(db.Date, nullable=False)
-    job_id = db.Column(db.String(10), db.ForeignKey('hr_jobs.job_id'), nullable=False)
-    department_id = db.Column(db.Integer, db.ForeignKey('hr_departments.department_id'))
+    EMPLOYEE_ID = db.Column(db.Integer, db.ForeignKey('HR_EMPLOYEES.EMPLOYEE_ID'), primary_key=True)
+    START_DATE = db.Column(db.Date, primary_key=True)
+    END_DATE = db.Column(db.Date)
+    JOB_ID = db.Column(db.String(10), db.ForeignKey('HR_JOBS.JOB_ID'))
+    DEPARTMENT_ID = db.Column(db.Integer, db.ForeignKey('HR_DEPARTMENTS.DEPARTMENT_ID'))
     
     # Relationships
     job = db.relationship('Job')
     department = db.relationship('Department')
+    employee = db.relationship('Employee')
     
     def to_dict(self):
         return {
-            'employee_id': self.employee_id,
-            'start_date': self.start_date.isoformat() if self.start_date else None,
-            'end_date': self.end_date.isoformat() if self.end_date else None,
-            'job_id': self.job_id,
-            'job_title': self.job.job_title if self.job else None,
-            'department_id': self.department_id,
-            'department_name': self.department.department_name if self.department else None
+            'employee_id': self.EMPLOYEE_ID,
+            'employee_name': f"{self.employee.FIRST_NAME} {self.employee.LAST_NAME}" if self.employee else None,
+            'start_date': self.START_DATE.isoformat() if self.START_DATE else None,
+            'end_date': self.END_DATE.isoformat() if self.END_DATE else None,
+            'job_id': self.JOB_ID,
+            'job_title': self.job.JOB_TITLE if self.job else None,
+            'department_id': self.DEPARTMENT_ID,
+            'department_name': self.department.DEPARTMENT_NAME if self.department else None
         }
 
 
 class JobGrade(db.Model):
     """Job Grade model."""
-    __tablename__ = 'hr_job_grades'
+    __tablename__ = 'HR_JOB_GRADES'
     
-    grade_level = db.Column(db.String(3), primary_key=True)
-    lowest_sal = db.Column(db.Integer)
-    highest_sal = db.Column(db.Integer)
+    GRADE_LEVEL = db.Column(db.String(3), primary_key=True)
+    LOWEST_SAL = db.Column(db.Integer)
+    HIGHEST_SAL = db.Column(db.Integer)
     
     def to_dict(self):
         return {
-            'grade_level': self.grade_level,
-            'lowest_sal': self.lowest_sal,
-            'highest_sal': self.highest_sal
+            'grade_level': self.GRADE_LEVEL,
+            'lowest_salary': self.LOWEST_SAL,
+            'highest_salary': self.HIGHEST_SAL
         } 

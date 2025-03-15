@@ -1,5 +1,10 @@
 import requests
 import json
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 BASE_URL = 'http://localhost:5000/api'
 
@@ -18,30 +23,58 @@ def test_auth():
     
     try:
         response = requests.post(f'{BASE_URL}/auth/register', json=register_data)
-        print(f"Register response ({response.status_code}):", json.dumps(response.json(), indent=2))
+        response_data = response.json()
+        print(f"Register response ({response.status_code}):", json.dumps(response_data, indent=2))
+        
+        if response.status_code >= 400:
+            logger.error(f"Registration failed with status {response.status_code}")
+            if 'error' in response_data:
+                logger.error(f"Error details: {response_data}")
         
         if response.status_code == 201:
-            access_token = response.json().get('access_token')
+            access_token = response_data.get('access_token')
             headers = {'Authorization': f'Bearer {access_token}'}
             
             # Test getting current user
             me_response = requests.get(f'{BASE_URL}/auth/me', headers=headers)
             print(f"Current user response ({me_response.status_code}):", json.dumps(me_response.json(), indent=2))
         
-        # Test login
+        # Test login with existing admin account
+        logger.info("Trying to login with admin account...")
+        login_data = {
+            'email': 'admin@example.com',
+            'password': 'password'
+        }
+        login_response = requests.post(f'{BASE_URL}/auth/login', json=login_data)
+        login_data = login_response.json()
+        print(f"Login response ({login_response.status_code}):", json.dumps(login_data, indent=2))
+        
+        if login_response.status_code >= 400:
+            logger.error(f"Login failed with status {login_response.status_code}")
+            if 'error' in login_data:
+                logger.error(f"Error details: {login_data}")
+        
+        if login_response.status_code == 200:
+            access_token = login_data.get('access_token')
+            return access_token
+        
+        # If admin login failed, try the test user
         login_data = {
             'email': 'test@example.com',
             'password': 'password123'
         }
         login_response = requests.post(f'{BASE_URL}/auth/login', json=login_data)
-        print(f"Login response ({login_response.status_code}):", json.dumps(login_response.json(), indent=2))
+        login_data = login_response.json()
+        print(f"Test user login response ({login_response.status_code}):", json.dumps(login_data, indent=2))
         
         if login_response.status_code == 200:
-            access_token = login_response.json().get('access_token')
+            access_token = login_data.get('access_token')
             return access_token
     
+    except requests.exceptions.ConnectionError:
+        logger.error(f"Failed to connect to {BASE_URL}. Is the server running?")
     except Exception as e:
-        print(f"Error testing auth endpoints: {str(e)}")
+        logger.error(f"Error testing auth endpoints: {str(e)}", exc_info=True)
     
     return None
 

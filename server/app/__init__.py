@@ -1,12 +1,10 @@
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
-from flask_jwt_extended import JWTManager
 from .config import config
 
 # Initialize extensions
 db = SQLAlchemy()
-jwt = JWTManager()
 
 def create_app(config_name='development'):
     """
@@ -26,7 +24,6 @@ def create_app(config_name='development'):
     
     # Initialize extensions with app
     db.init_app(app)
-    jwt.init_app(app)
     
     # Configure CORS with more specific settings
     CORS(app, 

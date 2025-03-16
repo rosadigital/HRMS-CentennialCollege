@@ -194,17 +194,19 @@ def get_employee(employee_id):
 def create_employee(data):
     """Create a new employee."""
     query = """
+    BEGIN
     INSERT INTO HR_EMPLOYEES (
-        FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER, 
-        HIRE_DATE, JOB_ID, SALARY, COMMISSION_PCT, 
-        MANAGER_ID, DEPARTMENT_ID
+        EMPLOYEE_ID, FIRST_NAME, LAST_NAME, EMAIL, PHONE_NUMBER,
+        HIRE_DATE, JOB_ID, SALARY, COMMISSION_PCT, MANAGER_ID, DEPARTMENT_ID
     ) VALUES (
-        :first_name, :last_name, :email, :phone_number,
-        SYSDATE, :job_id, :salary, :commission_pct,
-        :manager_id, :department_id
-    ) RETURNING EMPLOYEE_ID INTO :employee_id
+        HR_EMPLOYEES_SEQ.NEXTVAL, :first_name, :last_name, :email, :phone_number,
+        TO_DATE(:hire_date, 'YYYY-MM-DD'), :job_id, :salary, :commission_pct, :manager_id, :department_id
+    ) RETURNING EMPLOYEE_ID INTO :employee_id;
+    END;
     """
-    
+
+    connection = get_connection()
+    cursor = connection.cursor()
     # Default values for nullable fields
     params = {
         'first_name': data.get('first_name'),
@@ -213,20 +215,18 @@ def create_employee(data):
         'phone_number': data.get('phone_number') or None,
         'job_id': data.get('job_id'),
         'salary': data.get('salary') or 0,
+        'hire_date': data.get('hire_date') or None,
         'commission_pct': data.get('commission_pct') or None,
         'manager_id': data.get('manager_id') or None,
         'department_id': data.get('department_id') or None,
-        'employee_id': oracledb.NUMBER  # Output parameter
+        'employee_id': cursor.var(oracledb.NUMBER)  # Output parameter
     }
-    
-    connection = get_connection()
-    cursor = connection.cursor()
-    
+
     try:
         cursor.execute(query, params)
         employee_id = params['employee_id'].getvalue()
         connection.commit()
-        
+
         # Get the newly created employee
         employee = get_employee(employee_id)
         return employee

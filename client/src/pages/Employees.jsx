@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import { Search, Filter, ChevronDown, Eye, Edit, Trash2, Grid, List, Plus, X } from 'lucide-react';
-import { employeeService, departmentService } from '../services/api';
+import { employeeService, departmentService, hrLocation } from '../services/api';
 import AddEmployeeModal from '../components/employees/AddEmployeeModal';
 import ViewEmployeeModal from '../components/employees/ViewEmployeeModal';
 import EditEmployeeModal from '../components/employees/EditEmployeeModal';
@@ -12,6 +12,7 @@ const Employees = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [employees, setEmployees] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
@@ -35,19 +36,35 @@ const Employees = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [empResponse, deptResponse] = await Promise.all([
+        const [empResponse, deptResponse, locResponse] = await Promise.all([
           employeeService.getAll(),
-          departmentService.getAll()
+          departmentService.getAll(),
+          hrLocation.getAll(),
         ]);
-        
+
+
+
         if (empResponse.data.success) {
           setEmployees(empResponse.data.employees || []);
           setTotalCount(empResponse.data.employees?.length || 0);
         }
         
+
+        // Departments
         if (deptResponse.data.success) {
           setDepartments(deptResponse.data.departments || []);
+        } else {
+          setDepartments([]);
         }
+
+
+        if (locResponse.data.success) {
+          setLocations(locResponse.data.locations || []);
+        } else {
+          setLocations([]);
+        }
+
+
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Failed to load employees. Please refresh the page.');
@@ -191,7 +208,7 @@ const Employees = () => {
               >
                 <option value="">All Departments</option>
                 {departments.map(dept => (
-                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+                  <option key={dept.department_id} value={dept.department_id}>{dept.department_name}</option>
                 ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
@@ -205,11 +222,11 @@ const Employees = () => {
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
               >
-                <option value="">All Locations</option>
-                <option value="New York">New York</option>
-                <option value="San Francisco">San Francisco</option>
-                <option value="London">London</option>
-                <option value="Toronto">Toronto</option>
+                <option value="">All Departments</option>
+                {departments.map(loc => (
+                  <option key={loc.location_id} value={loc.location_id}>{loc.country_name}, {loc.city}</option>
+                ))}
+
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                 <ChevronDown size={16} className="text-gray-400" />
@@ -360,7 +377,8 @@ const Employees = () => {
       <AddEmployeeModal 
         isOpen={addModalOpen} 
         onClose={() => setAddModalOpen(false)} 
-        onSuccess={handleAddEmployee} 
+        onSuccess={handleAddEmployee}
+        departments={departments}
       />
       
       <ViewEmployeeModal 

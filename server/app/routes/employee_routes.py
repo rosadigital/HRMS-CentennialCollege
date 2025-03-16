@@ -63,8 +63,9 @@ def create_employee_route():
                     'message': f"Field '{field}' is required",
                     'error': 400
                 }), 400
-        
+
         employee_data = create_employee(data)
+        print(employee_data)
         return jsonify({
             'success': True,
             'message': 'Employee created successfully',

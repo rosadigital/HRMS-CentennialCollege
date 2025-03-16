@@ -13,10 +13,10 @@ const DeleteEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
     setError(null);
     
     try {
-      const response = await employeeService.delete(employee.id);
+      const response = await employeeService.delete(employee.employee_id);
       
       if (response.data.success) {
-        onSuccess(employee.id);
+        onSuccess(employee.employee_id);
         onClose();
       } else {
         setError('Failed to delete employee. Please try again.');

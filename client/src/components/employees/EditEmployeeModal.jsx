@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { employeeService, departmentService, jobService } from '../../services/api';
+import { employeeService, departmentService, jobService, hrLocation } from '../../services/api';
 
 const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -12,23 +12,44 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
     job_id: '',
     hire_date: '',
     salary: '',
+    bonus: '',  // corresponds to COMMISSION_PCT in the DB
   });
   
   const [errors, setErrors] = useState({});
   const [departments, setDepartments] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
   
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [deptResponse, jobResponse] = await Promise.all([
+        const [deptResponse, jobResponse, locResponse] = await Promise.all([
           departmentService.getAll(),
-          jobService.getAll()
+          jobService.getAll(),
+          hrLocation.getAll(),
         ]);
         
-        setDepartments(deptResponse.data.departments || []);
-        setJobs(jobResponse.data.jobs || []);
+        // Departments
+        if (deptResponse.data.success) {
+          setDepartments(deptResponse.data.departments || []);
+        } else {
+          setDepartments([]);
+        }
+
+        // Jobs
+        if (jobResponse.data.success) {
+          setJobs(jobResponse.data.jobs || []);
+        } else {
+          setJobs([]);
+        }
+
+        if (locResponse.data.success) {
+          setLocations(locResponse.data.locations || []);
+        } else {
+          setLocations([]);
+        }
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -49,14 +70,15 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
       }
       
       setFormData({
-        first_name: employee.first_name || '',
+        first_name: employee.first_name,
         last_name: employee.last_name || '',
         email: employee.email || '',
         phone: employee.phone || '',
         department_id: employee.department_id || '',
-        job_id: employee.job_id || '',
+        job_id: employee.job_id,
         hire_date: formattedHireDate,
         salary: employee.salary ? employee.salary.toString() : '',
+        commission_pct: employee.bonus || '',
       });
     }
   }, [employee]);
@@ -119,11 +141,10 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
       const employeeData = {
         ...formData,
         department_id: parseInt(formData.department_id),
-        job_id: parseInt(formData.job_id),
+        // job_id: parseInt(formData.job_id),
         salary: parseFloat(formData.salary),
       };
-      
-      const response = await employeeService.update(employee.id, employeeData);
+      const response = await employeeService.update(employee.employee_id, employeeData);
       
       if (response.data.success) {
         onSuccess(response.data.employee);
@@ -250,11 +271,17 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
                   onChange={handleChange}
                   className={`w-full p-2 border rounded ${errors.department_id ? 'border-red-500' : 'border-gray-300'}`}
                 >
-                  <option value="">Select Department</option>
-                  {departments.map(dept => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
+                <option value="">Select Department</option>
+                  {[...departments]
+                    .sort((a, b) =>
+                      a.department_name.toLowerCase().localeCompare(
+                        b.department_name.toLowerCase()
+                      )
+                    )
+                    .map((dept) => (
+                      <option key={dept.department_id} value={dept.department_id}>
+                        {dept.department_name}
+                      </option>
                   ))}
                 </select>
               </div>
@@ -267,15 +294,43 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
                   onChange={handleChange}
                   className={`w-full p-2 border rounded ${errors.job_id ? 'border-red-500' : 'border-gray-300'}`}
                 >
-                  <option value="">Select Job Title</option>
-                  {jobs.map(job => (
-                    <option key={job.id} value={job.id}>
-                      {job.title}
-                    </option>
+              <option value="">Select Job Title</option>
+                  {[...jobs]
+                    .sort((a, b) =>
+                      a.job_title.toLowerCase().localeCompare(b.job_title.toLowerCase())
+                    )
+                    .map((job) => (
+                      <option key={job.job_id} value={job.job_id}>
+                        {job.job_title}
+                      </option>
                   ))}
                 </select>
               </div>
               
+              <div>
+                <label className="block text-sm font-medium mb-1">Location</label>
+                <select
+                  name="location"
+                  value={formData.location || ''}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded"
+                >
+                  <option value="">Select Location</option>
+                  {[...locations]
+                    .sort((a, b) => {
+                      const aStr = `${a.country_name}, ${a.city}`.toLowerCase();
+                      const bStr = `${b.country_name}, ${b.city}`.toLowerCase();
+                      return aStr.localeCompare(bStr);
+                    })
+                    .map((loc) => (
+                      <option key={loc.location_id} value={loc.location_id}>
+                        {loc.country_name}, {loc.city}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+
               <div>
                 <label className="block text-sm font-medium mb-1">Hire Date</label>
                 <input
@@ -300,6 +355,18 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
                   />
                 </div>
                 {errors.salary && <p className="text-red-500 text-xs mt-1">{errors.salary}</p>}
+              </div>
+
+              {/* Commission (Bonus) */}
+              <div>
+                <label className="block text-sm font-medium mb-1">Bonus (%)</label>
+                <input
+                  type="text"
+                  name="bonus"
+                  value={formData.bonus}
+                  onChange={handleChange}
+                  className="w-full p-2 border border-gray-300 rounded"
+                />
               </div>
             </div>
           </div>

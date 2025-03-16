@@ -45,6 +45,7 @@ const Employees = () => {
 
 
         if (empResponse.data.success) {
+          console.log(empResponse.data.employees);
           setEmployees(empResponse.data.employees || []);
           setTotalCount(empResponse.data.employees?.length || 0);
         }
@@ -136,7 +137,7 @@ const Employees = () => {
   };
   
   const handleDeleteSuccess = (deletedEmployeeId) => {
-    setEmployees(employees.filter(emp => emp.id !== deletedEmployeeId));
+    setEmployees(employees.filter(emp => emp.employee_id !== deletedEmployeeId));
     setTotalCount(prevCount => prevCount - 1);
     setSuccessMessage('Employee deleted successfully!');
     setTimeout(() => {
@@ -199,7 +200,7 @@ const Employees = () => {
             />
           </div>
           
-          <div className="flex flex-col md:flex-row gap-3">
+          {/* <div className="flex flex-col md:flex-row gap-3">
             <div className="relative">
               <select 
                 className="appearance-none pl-3 pr-8 py-2 border border-gray-200 rounded-md w-full md:w-auto"
@@ -216,7 +217,7 @@ const Employees = () => {
               </div>
             </div>
             
-            <div className="relative">
+            {<div className="relative">
               <select 
                 className="appearance-none pl-3 pr-8 py-2 border border-gray-200 rounded-md w-full md:w-auto"
                 value={selectedLocation}
@@ -232,12 +233,12 @@ const Employees = () => {
                 <ChevronDown size={16} className="text-gray-400" />
               </div>
             </div>
-            
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md">
+             }
+            { <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-md">
               <Filter size={16} />
               <span>More Filters</span>
-            </button>
-          </div>
+            </button> }
+          </div> */}
         </div>
       </div>
       
@@ -384,7 +385,7 @@ const Employees = () => {
       <ViewEmployeeModal 
         isOpen={viewModalOpen} 
         onClose={() => setViewModalOpen(false)} 
-        employeeId={selectedEmployee?.id} 
+        employeeId={selectedEmployee?.employee_id} 
         onEdit={(employee) => {
           setViewModalOpen(false);
           handleEditEmployee(employee);

@@ -363,6 +363,167 @@ def get_department(department_id):
         "employees": employees
     }
 
+
+
+def create_department(data):
+    """Create a new department."""
+    query = """
+    BEGIN
+        INSERT INTO HR_DEPARTMENTS (
+            DEPARTMENT_ID, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID
+        ) VALUES (
+            :department_id, :department_name, :manager_id, :location_id
+        ) RETURNING DEPARTMENT_ID INTO :department_id;
+    END;
+    """
+
+    connection = get_connection()
+    cursor = connection.cursor()
+    
+    # Prepare the parameters for the insertion
+    params = {
+        'department_name': data.get('department_name'),
+        'manager_id': data.get('manager_id'),
+        'location_id': data.get('location_id'),
+        'department_id': data.get('department_id')
+    }
+    print(params)
+    try:
+        cursor.execute(query, params)
+
+        # Fetch the department_id from the bind variable
+        department_id = params['department_id']
+
+        # Commit the transaction
+        connection.commit()
+
+        # Get the newly created department (you can define this function to retrieve department data)
+        department = get_department(department_id)
+
+        return department
+
+    except Exception as e:
+        connection.rollback()
+        raise e
+
+    finally:
+        cursor.close()
+        connection.close()
+
+
+
+
+# def create_department(data):
+#     """Create a new department with DEPARTMENT_ID as last DEPARTMENT_ID + 10."""
+#     # Step 2: Insert the new department with DEPARTMENT_ID as last DEPARTMENT_ID + 10
+#     query = """
+#     DECLARE
+#         -- Variable to hold the current max DEPARTMENT_ID
+#         v_max_department_id HR_DEPARTMENTS.DEPARTMENT_ID%TYPE;
+#     BEGIN
+#         -- Get the maximum DEPARTMENT_ID from the HR_DEPARTMENTS table
+#         SELECT NVL(MAX(DEPARTMENT_ID), 0) + 10 
+#         INTO v_max_department_id
+#         FROM HR_DEPARTMENTS;
+
+#         -- Insert the new department with the calculated DEPARTMENT_ID
+#         INSERT INTO HR_DEPARTMENTS (
+#             DEPARTMENT_ID, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID
+#         ) VALUES (
+#             v_max_department_id, :department_name, :manager_id, :location_id
+#         );
+        
+#         -- Returning the newly created DEPARTMENT_ID
+#         :department_id := v_max_department_id;
+#     END;
+#     """
+
+#     connection = get_connection()  # Ensure get_connection is using oracledb
+#     cursor = connection.cursor()
+
+#     try:
+#         # Step 3: Prepare parameters for insertion
+#         params = {
+#             'department_name': data.get('department_name'),
+#             'manager_id': data.get('manager_id'),
+#             'location_id': data.get('location_id'),
+#             'department_id': None  # Placeholder for the department_id
+#         }
+
+#         # Step 4: Execute the PL/SQL block
+#         cursor.execute(query, params)
+
+#         # Step 5: Return the newly created DEPARTMENT_ID
+#         department_id = params['department_id']
+#         print(params)
+#         print(department_id)
+
+#         # Commit the transaction
+#         connection.commit()
+
+#         return department_id
+
+#     except Exception as e:
+#         connection.rollback()
+#         raise e
+
+#     finally:
+#         cursor.close()
+#         connection.close()
+
+    
+
+        
+
+
+
+def update_department(employee_id, data):
+    """Update an existing employee."""
+    # Build dynamic query based on provided fields
+    set_clauses = []
+    params = {'employee_id': employee_id}
+    
+    # Map fields to Oracle column names and build SET clauses
+    field_mapping = {
+        'first_name': 'FIRST_NAME',
+        'last_name': 'LAST_NAME',
+        'email': 'EMAIL',
+        'phone_number': 'PHONE_NUMBER',
+        'job_id': 'JOB_ID',
+        'salary': 'SALARY',
+        'commission_pct': 'COMMISSION_PCT',
+        'manager_id': 'MANAGER_ID',
+        'department_id': 'DEPARTMENT_ID'
+    }
+    
+    for field, column in field_mapping.items():
+        if field in data:
+            set_clauses.append(f"{column} = :{field}")
+            params[field] = data.get(field)
+    
+    if not set_clauses:
+        raise ValueError("No fields provided for update")
+    
+    query = f"""
+    UPDATE HR_EMPLOYEES
+    SET {', '.join(set_clauses)}
+    WHERE EMPLOYEE_ID = :employee_id
+    """
+    
+    result = execute_query(query, params, fetchall=False)
+    
+    # Get the updated employee
+    employee = get_employee(employee_id)
+    return employee
+
+def delete_department(employee_id):
+    """Delete an employee."""
+    query = "DELETE FROM HR_EMPLOYEES WHERE EMPLOYEE_ID = :employee_id"
+    result = execute_query(query, {'employee_id': employee_id}, fetchall=False)
+    return result > 0  # Return True if a row was deleted
+
+
+
 def get_job(job_id):
     """Get a single job by ID."""
     query = """

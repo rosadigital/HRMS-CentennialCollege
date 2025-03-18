@@ -1,40 +1,40 @@
 import React, { useState } from 'react';
 import { X, AlertTriangle, Trash2 } from 'lucide-react';
-import { employeeService } from '../../services/api';
+import { departmentService } from '../../services/api';
 
-const DeleteEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
+const DeleteDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
   const handleDelete = async () => {
-    if (!employee) return;
+    if (!department) return;
     
     setLoading(true);
     setError(null);
     
     try {
-      const response = await employeeService.delete(employee.employee_id);
+      const response = await departmentService.delete(department.department_id);
       
       if (response.data.success) {
-        onSuccess(employee.employee_id);
+        onSuccess(department.department_id);
         onClose();
       } else {
-        setError('Failed to delete employee. Please try again.');
+        setError('Failed to delete department. Please try again.');
       }
     } catch (error) {
-      console.error('Error deleting employee:', error);
+      console.error('Error deleting department:', error);
       
       if (error.response && error.response.data && error.response.data.message) {
         setError(error.response.data.message);
       } else {
-        setError('An error occurred while trying to delete the employee. Please try again.');
+        setError('An error occurred while trying to delete the department. Please try again.');
       }
     } finally {
       setLoading(false);
     }
   };
   
-  if (!isOpen || !employee) return null;
+  if (!isOpen || !department) return null;
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -42,7 +42,7 @@ const DeleteEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
         <div className="flex justify-between items-center p-4 border-b">
           <div className="flex items-center gap-2 text-red-500">
             <Trash2 size={20} />
-            <h2 className="text-xl font-bold">Delete Employee</h2>
+            <h2 className="text-xl font-bold">Delete department</h2>
           </div>
           <button
             onClick={onClose}
@@ -55,35 +55,35 @@ const DeleteEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
         <div className="p-6">
           <div className="flex items-start gap-4">
             <div className="h-12 w-12 rounded-full overflow-hidden flex-shrink-0">
-              {employee.image_url ? (
+              {department.image_url ? (
                 <img 
-                  src={employee.image_url} 
-                  alt={`${employee.first_name} ${employee.last_name}`}
+                  src={department.image_url} 
+                  alt={`${department.first_name} ${department.last_name}`}
                   className="w-full h-full object-cover" 
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-green-100 text-green-600 text-xl font-bold">
-                  {employee.first_name?.[0]}{employee.last_name?.[0]}
+                  {department.department_name.charAt(0)}
                 </div>
               )}
             </div>
             <div>
-              <h3 className="font-semibold text-lg">{employee.first_name} {employee.last_name}</h3>
-              <p className="text-gray-600">{employee.job_title} - {employee.department_name}</p>
+              <h3 className="font-semibold text-lg">{department.first_name} {department.last_name}</h3>
+              <p className="text-gray-600">{department.department_name}</p>
             </div>
           </div>
           
           <div className="mt-6">
             <p className="text-gray-700">
-              Are you sure you want to delete this employee? This action cannot be undone and will permanently remove the employee from the system.
+              Are you sure you want to delete this department? This action cannot be undone and will permanently remove the department from the system.
             </p>
             
-            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md flex items-start gap-2">
+            {/* <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md flex items-start gap-2">
               <AlertTriangle size={20} className="flex-shrink-0 mt-0.5" />
               <p className="text-sm">
-                Deleting this employee will also remove their access to all company systems and resources.
+                Deleting this department will also remove its access to all company systems and resources.
               </p>
-            </div>
+            </div> */}
             
             {error && (
               <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-md">
@@ -108,7 +108,7 @@ const DeleteEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
             disabled={loading}
             className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 flex items-center gap-1"
           >
-            {loading ? 'Deleting...' : 'Delete Employee'}
+            {loading ? 'Deleting...' : 'Delete department'}
           </button>
         </div>
       </div>
@@ -116,4 +116,4 @@ const DeleteEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
   );
 };
 
-export default DeleteEmployeeModal; 
+export default DeleteDepartmentModal; 

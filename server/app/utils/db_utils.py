@@ -409,72 +409,7 @@ def create_department(data):
     finally:
         cursor.close()
         connection.close()
-
-
-
-
-# def create_department(data):
-#     """Create a new department with DEPARTMENT_ID as last DEPARTMENT_ID + 10."""
-#     # Step 2: Insert the new department with DEPARTMENT_ID as last DEPARTMENT_ID + 10
-#     query = """
-#     DECLARE
-#         -- Variable to hold the current max DEPARTMENT_ID
-#         v_max_department_id HR_DEPARTMENTS.DEPARTMENT_ID%TYPE;
-#     BEGIN
-#         -- Get the maximum DEPARTMENT_ID from the HR_DEPARTMENTS table
-#         SELECT NVL(MAX(DEPARTMENT_ID), 0) + 10 
-#         INTO v_max_department_id
-#         FROM HR_DEPARTMENTS;
-
-#         -- Insert the new department with the calculated DEPARTMENT_ID
-#         INSERT INTO HR_DEPARTMENTS (
-#             DEPARTMENT_ID, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID
-#         ) VALUES (
-#             v_max_department_id, :department_name, :manager_id, :location_id
-#         );
-        
-#         -- Returning the newly created DEPARTMENT_ID
-#         :department_id := v_max_department_id;
-#     END;
-#     """
-
-#     connection = get_connection()  # Ensure get_connection is using oracledb
-#     cursor = connection.cursor()
-
-#     try:
-#         # Step 3: Prepare parameters for insertion
-#         params = {
-#             'department_name': data.get('department_name'),
-#             'manager_id': data.get('manager_id'),
-#             'location_id': data.get('location_id'),
-#             'department_id': None  # Placeholder for the department_id
-#         }
-
-#         # Step 4: Execute the PL/SQL block
-#         cursor.execute(query, params)
-
-#         # Step 5: Return the newly created DEPARTMENT_ID
-#         department_id = params['department_id']
-#         print(params)
-#         print(department_id)
-
-#         # Commit the transaction
-#         connection.commit()
-
-#         return department_id
-
-#     except Exception as e:
-#         connection.rollback()
-#         raise e
-
-#     finally:
-#         cursor.close()
-#         connection.close()
-
-    
-
-        
-
+ 
 
 
 def update_department(employee_id, data):
@@ -516,10 +451,10 @@ def update_department(employee_id, data):
     employee = get_employee(employee_id)
     return employee
 
-def delete_department(employee_id):
-    """Delete an employee."""
-    query = "DELETE FROM HR_EMPLOYEES WHERE EMPLOYEE_ID = :employee_id"
-    result = execute_query(query, {'employee_id': employee_id}, fetchall=False)
+def delete_department(department_id):
+    """Delete an department."""
+    query = "DELETE FROM HR_DEPARTMENTS WHERE DEPARTMENT_ID = :department_id"
+    result = execute_query(query, {'department_id': department_id}, fetchall=False)
     return result > 0  # Return True if a row was deleted
 
 

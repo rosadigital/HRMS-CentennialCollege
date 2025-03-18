@@ -122,6 +122,7 @@ class Department(db.Model):
         }
 
 
+
 class Job(db.Model):
     """Job model."""
     __tablename__ = 'HR_JOBS'

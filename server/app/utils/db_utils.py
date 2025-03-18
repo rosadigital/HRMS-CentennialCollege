@@ -51,20 +51,55 @@ def execute_query(query, params=None, fetchall=True):
     
     return results
 
+# def get_departments():
+#     """Get all departments using direct connection."""
+#     query = "SELECT, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID FROM HR_DEPARTMENTS"
+#     rows = execute_query(query)
+    
+#     return [
+#         {
+#             "department_id": row[0],
+#             "department_name": row[1],
+#             "manager_id": row[2],
+#             "location_id": row[3]
+#         }
+#         for row in rows
+#     ]
+
 def get_departments():
-    """Get all departments using direct connection."""
-    query = "SELECT DEPARTMENT_ID, DEPARTMENT_NAME, MANAGER_ID, LOCATION_ID FROM HR_DEPARTMENTS"
+    """Get all departments with manager first name, location city, and location country."""
+    
+    # Modified SQL query to join HR_DEPARTMENTS, HR_EMPLOYEES, and HR_LOCATIONS
+    query = """
+    SELECT 
+        d.DEPARTMENT_ID,
+        d.DEPARTMENT_NAME,
+        d.MANAGER_ID,
+        e.FIRST_NAME AS MANAGER_FIRST_NAME,
+        l.CITY AS LOCATION_CITY,
+        c.COUNTRY_NAME AS LOCATION_COUNTRY
+    FROM HR_DEPARTMENTS d
+    LEFT JOIN HR_EMPLOYEES e ON d.MANAGER_ID = e.EMPLOYEE_ID
+    LEFT JOIN HR_LOCATIONS l ON d.LOCATION_ID = l.LOCATION_ID
+    LEFT JOIN HR_COUNTRIES c ON l.COUNTRY_ID = c.COUNTRY_ID
+    """
+    
     rows = execute_query(query)
     
+    # Return the list of departments with the added manager first name and location info
     return [
         {
             "department_id": row[0],
             "department_name": row[1],
             "manager_id": row[2],
-            "location_id": row[3]
+            "manager_first_name": row[3] if row[3] else 'Not Assigned',  # Manager's first name
+            "location_id": row[4],
+            "location_city": row[4] if row[4] else 'Not Specified',  # Location city
+            "location_country": row[5] if row[5] else 'Not Specified'  # Location country
         }
         for row in rows
     ]
+
 
 def get_department_options():
     """Get departments for dropdown options."""

@@ -247,7 +247,7 @@ const Employees = () => {
         <div className="p-4 border-b border-gray-100 flex justify-between items-center">
           <h2 className="font-medium">All Employees ({totalCount})</h2>
           <div className="flex gap-2">
-            <button 
+            {/* <button 
               className={`p-1 ${viewMode === 'grid' ? 'text-green-500 bg-green-50' : 'text-gray-400'} rounded`}
               onClick={() => setViewMode('grid')}
             >
@@ -258,7 +258,7 @@ const Employees = () => {
               onClick={() => setViewMode('list')}
             >
               <List size={20} />
-            </button>
+            </button> */}
           </div>
         </div>
         

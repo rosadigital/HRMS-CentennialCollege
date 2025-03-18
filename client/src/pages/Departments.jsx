@@ -306,7 +306,11 @@ const Departments = () => {
                 </div>
 
                 <div className="col-span-3">
-                  <p>{department.manager_first_name || 'Not Assigned'}</p>
+                  <p>
+                    {department.manager_first_name && department.manager_last_name
+                      ? `${department.manager_first_name} ${department.manager_last_name}`
+                      : department.manager_first_name || department.manager_last_name || 'Not Assigned'}
+                  </p>
                   <p className="text-sm text-gray-500">{department.job_title || 'Manager Not Assigned'}</p>
                 </div>
 

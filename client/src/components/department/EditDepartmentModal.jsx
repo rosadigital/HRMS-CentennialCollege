@@ -2,46 +2,47 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { employeeService, departmentService, jobService, hrLocation } from '../../services/api';
 
-const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
+const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
   const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    phone: '',
     department_id: '',
-    job_id: '',
-    hire_date: '',
-    salary: '',
-    bonus: '',  // corresponds to COMMISSION_PCT in the DB
+    department_name: '',
+    manager_id: '',
+    location_id: '',
+    department_id: '',
+    manager_first_name: '',
+    manager_last_name: '',
+    location_city: '',
+    location_country: '',
+
+
   });
-  
+
   const [errors, setErrors] = useState({});
   const [departments, setDepartments] = useState([]);
-  const [jobs, setJobs] = useState([]);
+  const [employees, setEmployees] = useState([]);
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [deptResponse, jobResponse, locResponse] = await Promise.all([
+        const [empResponse, deptResponse, locResponse] = await Promise.all([
+          employeeService.getAll(),
           departmentService.getAll(),
-          jobService.getAll(),
           hrLocation.getAll(),
         ]);
-        
-        // Departments
+
+        if (empResponse.data.success) {
+          setEmployees(empResponse.data.employees || []);
+        } else {
+          setEmployees([]);
+        }
+
         if (deptResponse.data.success) {
+          console.log(deptResponse);
           setDepartments(deptResponse.data.departments || []);
         } else {
           setDepartments([]);
-        }
-
-        // Jobs
-        if (jobResponse.data.success) {
-          setJobs(jobResponse.data.jobs || []);
-        } else {
-          setJobs([]);
         }
 
         if (locResponse.data.success) {
@@ -49,7 +50,6 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
         } else {
           setLocations([]);
         }
-
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -61,110 +61,81 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
   }, [isOpen]);
   
   useEffect(() => {
-    if (employee) {
-      // Format hire_date for date input (YYYY-MM-DD)
-      let formattedHireDate = '';
-      if (employee.hire_date) {
-        const date = new Date(employee.hire_date);
-        formattedHireDate = date.toISOString().split('T')[0];
-      }
+    if (department) {
       
       setFormData({
-        first_name: employee.first_name,
-        last_name: employee.last_name || '',
-        email: employee.email || '',
-        phone: employee.phone || '',
-        department_id: employee.department_id || '',
-        job_id: employee.job_id,
-        hire_date: formattedHireDate,
-        salary: employee.salary ? employee.salary.toString() : '',
-        commission_pct: employee.bonus || '',
+        department_id: department.department_id,
+        department_name: department.department_name || '',
+        manager_id: department.manager_id || '',
+        location_id: department.location_id || '',
+        department_id: department.department_id || '',
+        manager_first_name: department.manager_first_name || '',
+        manager_last_name: department.manager_last_name || '',
+        location_city: department.location_city || '',
+        location_country: department.location_country || ''
       });
     }
-  }, [employee]);
+  }, [department]);
   
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Clear error for this field when user edits it
     if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-  
+
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.first_name) newErrors.first_name = 'First name is required';
-    if (!formData.last_name) newErrors.last_name = 'Last name is required';
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
-    }
-    if (!formData.department_id) newErrors.department_id = 'Department is required';
-    if (!formData.job_id) newErrors.job_id = 'Job title is required';
-    if (!formData.hire_date) newErrors.hire_date = 'Hire date is required';
-    
-    if (formData.salary) {
-      const salary = Number(formData.salary);
-      if (isNaN(salary) || salary <= 0) {
-        newErrors.salary = 'Salary must be a positive number';
-      }
-      
-      // Check salary range for the selected department
-      const selectedDept = departments.find(d => d.id === parseInt(formData.department_id));
-      if (selectedDept && selectedDept.salary_range) {
-        const { min, max } = selectedDept.salary_range;
-        if (salary < min || salary > max) {
-          newErrors.salary = `Salary must be within department range ($${min.toLocaleString()} - $${max.toLocaleString()})`;
-        }
-      }
-    } else {
-      newErrors.salary = 'Salary is required';
-    }
+    if (!formData.department_name) newErrors.department_name = 'Department title is required';
+    if (!formData.manager_id) newErrors.manager_id = 'Manager is required';
+    if (!formData.location_id) newErrors.location_id = 'Location is required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
     setLoading(true);
-    
+
     try {
-      // Convert values to appropriate types
-      const employeeData = {
-        ...formData,
-        department_id: parseInt(formData.department_id),
-        // job_id: parseInt(formData.job_id),
-        salary: parseFloat(formData.salary),
+        const maxDepartmentId = departments.reduce((max, dept) => {
+          return dept.department_id > max ? dept.department_id : max;
+        }, 0);
+        const newDepartmentId = maxDepartmentId + 10;
+
+      const departmentData = {
+        department_name: formData.department_name,
+        department_id: formData.department_id,
+        manager_id: formData.manager_id ? parseInt(formData.manager_id, 10) : null,
+        location_id: formData.location_id ? parseInt(formData.location_id, 10) : null,
       };
-      const response = await employeeService.update(employee.employee_id, employeeData);
-      
+
+      const response = await departmentService.update(department.department_id, departmentData);
+
       if (response.data.success) {
-        onSuccess(response.data.employee);
+        onSuccess(response.data.department);
         onClose();
+  
+        setFormData({
+          department_name: '',
+          manager_id: '',
+          location_id: '',
+        });
       }
     } catch (error) {
-      console.error('Error updating employee:', error);
-      
+      console.error('Error creating department:', error);
+  
       if (error.response && error.response.data) {
         if (error.response.data.errors) {
           setErrors(error.response.data.errors);
         } else if (error.response.data.message) {
-          // Handle specific error message
-          if (error.response.data.message.includes('Email')) {
-            setErrors({ email: error.response.data.message });
-          } else if (error.response.data.message.includes('Salary')) {
-            setErrors({ salary: error.response.data.message });
-          } else {
-            setErrors({ general: error.response.data.message });
-          }
+          setErrors({ general: error.response.data.message });
         }
       } else {
         setErrors({ general: 'An error occurred. Please try again.' });
@@ -173,14 +144,14 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
       setLoading(false);
     }
   };
-  
+
   if (!isOpen) return null;
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-bold">Edit Employee Details</h2>
+          <h2 className="text-xl font-bold">Edit Department Details</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -211,111 +182,87 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
             </div>
           )}
           
+          {/* Department Information */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-4">Personal Information</h3>
+            <h3 className="text-lg font-medium mb-4">Department Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Department Name */}
+
               <div>
-                <label className="block text-sm font-medium mb-1">First Name</label>
+                <label className="block text-sm font-medium mb-1">Department Name</label>
                 <input
                   type="text"
-                  name="first_name"
-                  value={formData.first_name}
+                  name="department_name"
+                  value={formData.department_name}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded ${errors.first_name ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border rounded ${
+                    errors.department_name ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
+                {errors.department_name && (
+                  <p className="text-red-500 text-xs mt-1">{errors.department_name}</p>
+                )}
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Last Name</label>
-                <input
-                  type="text"
-                  name="last_name"
-                  value={formData.last_name}
-                  onChange={handleChange}
-                  className={`w-full p-2 border rounded ${errors.last_name ? 'border-red-500' : 'border-gray-300'}`}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`w-full p-2 border rounded ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Phone</label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded"
-                />
-              </div>
+
+
             </div>
           </div>
-          
+
+          {/* Department Details */}
           <div className="mb-6">
-            <h3 className="text-lg font-medium mb-4">Employment Details</h3>
+            <h3 className="text-lg font-medium mb-4">Department Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Manager */}
+
               <div>
-                <label className="block text-sm font-medium mb-1">Department</label>
+                <label className="block text-sm font-medium mb-1">Manager</label>
                 <select
-                  name="department_id"
-                  value={formData.department_id}
+                  name="manager_id"
+                  value={formData.manager_id}  // The value to be sent to the backend is manager_id
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded ${errors.department_id ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border rounded ${
+                    errors.manager_id ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
-                <option value="">Select Department</option>
-                  {[...departments]
-                    .sort((a, b) =>
-                      a.department_name.toLowerCase().localeCompare(
-                        b.department_name.toLowerCase()
-                      )
-                    )
-                    .map((dept) => (
-                      <option key={dept.department_id} value={dept.department_id}>
-                        {dept.department_name}
+                  <option value="">
+                    {formData.manager_first_name && formData.manager_last_name
+                      ? `${formData.manager_first_name}, ${formData.manager_last_name}`
+                      : 'Select Location'}
+                  </option>
+                  {[...employees]
+                    .sort((a, b) => {
+                      const aStr = `${a.first_name}, ${a.last_name}`.toLowerCase();
+                      const bStr = `${b.first_name}, ${b.last_name}`.toLowerCase();
+                      return aStr.localeCompare(bStr);
+                    })
+                    .map((emp) => (
+                      <option key={emp.employee_id} value={emp.employee_id}>
+                        {emp.first_name} {emp.last_name} {/* Display first and last name */}
                       </option>
-                  ))}
+                    ))}
                 </select>
+
+                {errors.employee_id && (
+                  <p className="text-red-500 text-xs mt-1">{errors.employee_id}</p>
+                )}
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Job Title</label>
-                <select
-                  name="job_id"
-                  value={formData.job_id}
-                  onChange={handleChange}
-                  className={`w-full p-2 border rounded ${errors.job_id ? 'border-red-500' : 'border-gray-300'}`}
-                >
-              <option value="">Select Job Title</option>
-                  {[...jobs]
-                    .sort((a, b) =>
-                      a.job_title.toLowerCase().localeCompare(b.job_title.toLowerCase())
-                    )
-                    .map((job) => (
-                      <option key={job.job_id} value={job.job_id}>
-                        {job.job_title}
-                      </option>
-                  ))}
-                </select>
-              </div>
-              
+
+
               <div>
                 <label className="block text-sm font-medium mb-1">Location</label>
                 <select
-                  name="location"
-                  value={formData.location || ''}
+                  name="location_id"
+                  value={formData.location_id}  // The value to be sent to the backend is location_id
                   onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded"
+                  className={`w-full p-2 border rounded ${
+                    errors.location_id ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
-                  <option value="">Select Location</option>
+                  <option value="">
+                    {formData.location_city && formData.location_country
+                      ? `${formData.location_city}, ${formData.location_country}`
+                      : 'Select Location'}
+                  </option>
                   {[...locations]
                     .sort((a, b) => {
                       const aStr = `${a.country_name}, ${a.city}`.toLowerCase();
@@ -324,50 +271,17 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
                     })
                     .map((loc) => (
                       <option key={loc.location_id} value={loc.location_id}>
-                        {loc.country_name}, {loc.city}
+                        {loc.country_name}, {loc.city} {/* Display city and country */}
                       </option>
                     ))}
                 </select>
+
+                {errors.location_id && (
+                  <p className="text-red-500 text-xs mt-1">{errors.location_id}</p>
+                )}
               </div>
 
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Hire Date</label>
-                <input
-                  type="date"
-                  name="hire_date"
-                  value={formData.hire_date}
-                  onChange={handleChange}
-                  className={`w-full p-2 border rounded ${errors.hire_date ? 'border-red-500' : 'border-gray-300'}`}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium mb-1">Salary</label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">$</span>
-                  <input
-                    type="text"
-                    name="salary"
-                    value={formData.salary}
-                    onChange={handleChange}
-                    className={`w-full p-2 pl-8 border rounded ${errors.salary ? 'border-red-500' : 'border-gray-300'}`}
-                  />
-                </div>
-                {errors.salary && <p className="text-red-500 text-xs mt-1">{errors.salary}</p>}
-              </div>
-
-              {/* Commission (Bonus) */}
-              <div>
-                <label className="block text-sm font-medium mb-1">Bonus (%)</label>
-                <input
-                  type="text"
-                  name="bonus"
-                  value={formData.bonus}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded"
-                />
-              </div>
             </div>
           </div>
           
@@ -393,4 +307,4 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
   );
 };
 
-export default EditEmployeeModal; 
+export default EditDepartmentModal; 

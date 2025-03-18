@@ -66,8 +66,9 @@ def execute_query(query, params=None, fetchall=True):
 #         for row in rows
 #     ]
 
+
 def get_departments():
-    """Get all departments with manager first name, location city, location country, and job title."""
+    """Get all departments with manager first name, last name, location city, location country, and job title."""
     
     # Modified SQL query to join HR_DEPARTMENTS, HR_EMPLOYEES, HR_LOCATIONS, and HR_JOBS
     query = """
@@ -76,6 +77,7 @@ def get_departments():
         d.DEPARTMENT_NAME,
         d.MANAGER_ID,
         e.FIRST_NAME AS MANAGER_FIRST_NAME,
+        e.LAST_NAME AS MANAGER_LAST_NAME,  -- Added last name
         l.CITY AS LOCATION_CITY,
         c.COUNTRY_NAME AS LOCATION_COUNTRY,
         j.JOB_TITLE AS JOB_TITLE
@@ -88,16 +90,17 @@ def get_departments():
     
     rows = execute_query(query)
     
-    # Return the list of departments with the added manager first name, location info, and job title
+    # Return the list of departments with the added manager first name, last name, location info, and job title
     return [
         {
             "department_id": row[0],
             "department_name": row[1],
             "manager_id": row[2],
             "manager_first_name": row[3] if row[3] else 'Not Assigned',  # Manager's first name
-            "location_city": row[4] if row[4] else 'Not Specified',  # Location city
-            "location_country": row[5] if row[5] else 'Not Specified',  # Location country
-            "job_title": row[6] if row[6] else 'Not Assigned'  # Job title of the manager
+            "manager_last_name": row[4] if row[4] else 'Not Assigned',  # Manager's last name
+            "location_city": row[5] if row[5] else 'Not Specified',  # Location city
+            "location_country": row[6] if row[6] else 'Not Specified',  # Location country
+            "job_title": row[7] if row[7] else 'Not Assigned'  # Job title of the manager
         }
         for row in rows
     ]
@@ -426,23 +429,18 @@ def create_department(data):
  
 
 
-def update_department(employee_id, data):
-    """Update an existing employee."""
+def update_department(department_id, data):
+    """Update an existing department."""
     # Build dynamic query based on provided fields
     set_clauses = []
-    params = {'employee_id': employee_id}
+    params = {'department_id': department_id}
     
     # Map fields to Oracle column names and build SET clauses
     field_mapping = {
-        'first_name': 'FIRST_NAME',
-        'last_name': 'LAST_NAME',
-        'email': 'EMAIL',
-        'phone_number': 'PHONE_NUMBER',
-        'job_id': 'JOB_ID',
-        'salary': 'SALARY',
-        'commission_pct': 'COMMISSION_PCT',
-        'manager_id': 'MANAGER_ID',
-        'department_id': 'DEPARTMENT_ID'
+        'department_name': 'DEPARTMENT_NAME',
+        'department_id': 'DEPARTMENT_ID',
+        'location_id': 'LOCATION_ID',
+        'manager_id': 'MANAGER_ID'
     }
     
     for field, column in field_mapping.items():
@@ -454,16 +452,16 @@ def update_department(employee_id, data):
         raise ValueError("No fields provided for update")
     
     query = f"""
-    UPDATE HR_EMPLOYEES
+    UPDATE HR_DEPARTMENTS
     SET {', '.join(set_clauses)}
-    WHERE EMPLOYEE_ID = :employee_id
+    WHERE DEPARTMENT_ID = :department_id
     """
-    
+        
     result = execute_query(query, params, fetchall=False)
     
-    # Get the updated employee
-    employee = get_employee(employee_id)
-    return employee
+    # Get the updated departments
+    department = get_department(department_id)
+    return department
 
 def delete_department(department_id):
     """Delete an department."""

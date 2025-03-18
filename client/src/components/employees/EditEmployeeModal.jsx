@@ -221,7 +221,9 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded ${errors.first_name ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border rounded ${
+                    errors.first_name ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 />
               </div>
               
@@ -269,7 +271,9 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
                   name="department_id"
                   value={formData.department_id}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded ${errors.department_id ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full p-2 border rounded ${
+                    errors.department_id ? 'border-red-500' : 'border-gray-300'
+                  }`}
                 >
                 <option value="">Select Department</option>
                   {[...departments]

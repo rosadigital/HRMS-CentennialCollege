@@ -1,36 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { X, Mail, Phone, MapPin, Edit } from 'lucide-react';
-import { employeeService } from '../../services/api';
+import { departmentService } from '../../services/api';
 
-const ViewEmployeeModal = ({ isOpen, onClose, employeeId, onEdit }) => {
-  const [employee, setEmployee] = useState(null);
+const ViewDepartmentModal = ({ isOpen, onClose, departmentId, onEdit }) => {
+  const [department, setDepartment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchEmployee = async () => {
-      if (!employeeId) return;
+    const fetchDepartment = async () => {
+      if (!departmentId) return;
       
       setLoading(true);
       try {
-        const response = await employeeService.getById(employeeId);
+        const response = await departmentService.getById(departmentId);
         if (response.data.success) {
-          setEmployee(response.data.employee);
+          setDepartment(response.data.department);
         } else {
-          setError('Failed to load employee details');
+          setError('Failed to load department details');
         }
       } catch (error) {
-        console.error('Error fetching employee:', error);
-        setError('Error loading employee details. Please try again.');
+        console.error('Error fetching department:', error);
+        setError('Error loading department details. Please try again.');
       } finally {
         setLoading(false);
       }
     };
 
-    if (isOpen && employeeId) {
-      fetchEmployee();
+    if (isOpen && departmentId) {
+      fetchDepartment();
     }
-  }, [isOpen, employeeId]);
+  }, [isOpen, departmentId]);
 
   if (!isOpen) return null;
   
@@ -38,7 +38,7 @@ const ViewEmployeeModal = ({ isOpen, onClose, employeeId, onEdit }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b">
-          <h2 className="text-xl font-bold">Employee Details</h2>
+          <h2 className="text-xl font-bold">Department Details</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -56,28 +56,31 @@ const ViewEmployeeModal = ({ isOpen, onClose, employeeId, onEdit }) => {
             <div className="p-4 text-red-500 text-center">
               {error}
             </div>
-          ) : employee ? (
+          ) : department ? (
             <div>
               <div className="flex flex-col md:flex-row gap-6 mb-6">
                 <div className="md:w-1/3 flex flex-col items-center">
                   <div className="w-32 h-32 bg-gray-200 rounded-full overflow-hidden mb-3">
-                    {employee.image_url ? (
-                      <img src={employee.image_url} alt={`${employee.first_name} ${employee.last_name}`} className="w-full h-full object-cover" />
+                    {department.image_url ? (
+                      <img
+                      src={department.image_url} 
+                      alt={`${department.first_name} ${department.last_name}`}
+                      className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-green-100 text-green-600 text-2xl font-bold">
-                        {employee.first_name[0]}{employee.last_name[0]}
-                      </div>
+                      {department.department_name.charAt(0)}
+                  </div>
                     )}
                   </div>
-                  <h3 className="text-xl font-semibold">{employee.first_name} {employee.last_name}</h3>
-                  <p className="text-gray-600">{employee.job_title}</p>
+                  <h3 className="text-xl font-semibold">{department.first_name} {department.last_name}</h3>
+                  <p className="text-gray-600">{department.department_name}</p>
                 </div>
                 
                 <div className="md:w-2/3">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-medium">Personal Information</h3>
+                    <h3 className="text-lg font-medium">Department Information</h3>
                     <button 
-                      onClick={() => onEdit(employee)}
+                      onClick={() => onEdit(department)}
                       className="text-green-500 flex items-center gap-1 hover:text-green-600"
                     >
                       <Edit size={16} />
@@ -87,67 +90,47 @@ const ViewEmployeeModal = ({ isOpen, onClose, employeeId, onEdit }) => {
                   
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div>
-                      <p className="text-sm text-gray-500">Employee ID</p>
-                      <p className="font-medium">{employee.id}</p>
+                      <p className="text-sm text-gray-500">Department Name</p>
+                      <p className="font-medium">{department.department_name}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Date of Birth</p>
-                      <p className="font-medium">{employee.date_of_birth || 'Not specified'}</p>
+                      {/* <p className="text-sm text-gray-500"></p> */}
+                      {/* <p className="font-medium">{department.department_name  || 'Not specified'}</p> */}
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Gender</p>
-                      <p className="font-medium">{employee.gender || 'Not specified'}</p>
+                      <p className="text-sm text-gray-500">City</p>
+                      <p className="font-medium">{department.location_city || 'Not specified'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500">Marital Status</p>
-                      <p className="font-medium">{employee.marital_status || 'Not specified'}</p>
+                      <p className="text-sm text-gray-500">Country</p>
+                      <p className="font-medium">{department.location_country || 'Not specified'}</p>
                     </div>
-                  </div>
-                  
-                  <h3 className="text-lg font-medium mb-4">Employment Information</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-500">Department</p>
-                      <p className="font-medium">{employee.department_name || 'Not assigned'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Job Title</p>
-                      <p className="font-medium">{employee.job_title}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Join Date</p>
-                      <p className="font-medium">{new Date(employee.hire_date).toLocaleDateString()}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500">Employment Status</p>
-                      <p className="font-medium">Full Time</p>
-                    </div>
-                  </div>
+                  </div>                  
                 </div>
               </div>
               
               <div className="flex flex-col md:flex-row gap-3 mt-4 pt-4 border-t">
                 <div className="flex items-center gap-2 text-gray-600">
                   <Mail size={18} />
-                  <span>{employee.email}</span>
+                  <span>{department.email}</span>
                 </div>
-                {employee.phone && (
+                {department.phone && (
                   <div className="flex items-center gap-2 text-gray-600">
                     <Phone size={18} />
-                    <span>{employee.phone}</span>
+                    <span>{department.phone}</span>
                   </div>
                 )}
-                {employee.location && (
+                {department.location && (
                   <div className="flex items-center gap-2 text-gray-600">
                     <MapPin size={18} />
-                    <span>{employee.location}</span>
+                    <span>{department.location}</span>
                   </div>
                 )}
               </div>
             </div>
           ) : (
             <div className="p-4 text-center text-gray-500">
-              No employee data found
+              No department data found
             </div>
           )}
         </div>
@@ -165,4 +148,4 @@ const ViewEmployeeModal = ({ isOpen, onClose, employeeId, onEdit }) => {
   );
 };
 
-export default ViewEmployeeModal; 
+export default ViewDepartmentModal; 

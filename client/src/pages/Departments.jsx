@@ -283,7 +283,7 @@ const Departments = () => {
           <div className="col-span-2">LOCATION</div>
           {/* <div className="col-span-1">EMPLOYEES</div> */}
           <div className="col-span-1">STATUS</div>
-          {/* <div className="col-span-2 text-right">ACTIONS</div> */}
+          <div className="col-span-2 text-right">ACTIONS</div>
         </div>
         
             {/* Table Content */}
@@ -307,10 +307,10 @@ const Departments = () => {
 
                 <div className="col-span-3">
                   <p>{department.manager_first_name || 'Not Assigned'}</p>
-                  <p className="text-sm text-gray-500">{department.manager_id || 'Manager Not Assigned'}</p>
+                  <p className="text-sm text-gray-500">{department.job_title || 'Manager Not Assigned'}</p>
                 </div>
 
-                <div className="col-span-3">
+                <div className="col-span-2">
                   <p>{department.location_city || 'Not Assigned'}</p>
                   <p className="text-sm text-gray-500">{department.location_country || 'Manager Not Assigned'}</p>
                 </div>

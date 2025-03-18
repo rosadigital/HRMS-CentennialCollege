@@ -67,9 +67,9 @@ def execute_query(query, params=None, fetchall=True):
 #     ]
 
 def get_departments():
-    """Get all departments with manager first name, location city, and location country."""
+    """Get all departments with manager first name, location city, location country, and job title."""
     
-    # Modified SQL query to join HR_DEPARTMENTS, HR_EMPLOYEES, and HR_LOCATIONS
+    # Modified SQL query to join HR_DEPARTMENTS, HR_EMPLOYEES, HR_LOCATIONS, and HR_JOBS
     query = """
     SELECT 
         d.DEPARTMENT_ID,
@@ -77,28 +77,31 @@ def get_departments():
         d.MANAGER_ID,
         e.FIRST_NAME AS MANAGER_FIRST_NAME,
         l.CITY AS LOCATION_CITY,
-        c.COUNTRY_NAME AS LOCATION_COUNTRY
+        c.COUNTRY_NAME AS LOCATION_COUNTRY,
+        j.JOB_TITLE AS JOB_TITLE
     FROM HR_DEPARTMENTS d
     LEFT JOIN HR_EMPLOYEES e ON d.MANAGER_ID = e.EMPLOYEE_ID
     LEFT JOIN HR_LOCATIONS l ON d.LOCATION_ID = l.LOCATION_ID
     LEFT JOIN HR_COUNTRIES c ON l.COUNTRY_ID = c.COUNTRY_ID
+    LEFT JOIN HR_JOBS j ON e.JOB_ID = j.JOB_ID
     """
     
     rows = execute_query(query)
     
-    # Return the list of departments with the added manager first name and location info
+    # Return the list of departments with the added manager first name, location info, and job title
     return [
         {
             "department_id": row[0],
             "department_name": row[1],
             "manager_id": row[2],
             "manager_first_name": row[3] if row[3] else 'Not Assigned',  # Manager's first name
-            "location_id": row[4],
             "location_city": row[4] if row[4] else 'Not Specified',  # Location city
-            "location_country": row[5] if row[5] else 'Not Specified'  # Location country
+            "location_country": row[5] if row[5] else 'Not Specified',  # Location country
+            "job_title": row[6] if row[6] else 'Not Assigned'  # Job title of the manager
         }
         for row in rows
     ]
+
 
 
 def get_department_options():
@@ -318,15 +321,25 @@ def delete_employee(employee_id):
     return result > 0  # Return True if a row was deleted
 
 def get_department(department_id):
-    """Get a single department by ID."""
+    """Get a single department by ID with manager first name, location city, location country, and job title."""
+    
     query = """
-    SELECT d.DEPARTMENT_ID, d.DEPARTMENT_NAME, d.MANAGER_ID, d.LOCATION_ID,
-           l.CITY, l.STATE_PROVINCE, c.COUNTRY_NAME
+    SELECT 
+        d.DEPARTMENT_ID,
+        d.DEPARTMENT_NAME,
+        d.MANAGER_ID,
+        e.FIRST_NAME AS MANAGER_FIRST_NAME,
+        l.CITY AS LOCATION_CITY,
+        c.COUNTRY_NAME AS LOCATION_COUNTRY,
+        j.JOB_TITLE AS JOB_TITLE
     FROM HR_DEPARTMENTS d
+    LEFT JOIN HR_EMPLOYEES e ON d.MANAGER_ID = e.EMPLOYEE_ID
     LEFT JOIN HR_LOCATIONS l ON d.LOCATION_ID = l.LOCATION_ID
     LEFT JOIN HR_COUNTRIES c ON l.COUNTRY_ID = c.COUNTRY_ID
+    LEFT JOIN HR_JOBS j ON e.JOB_ID = j.JOB_ID
     WHERE d.DEPARTMENT_ID = :dept_id
     """
+    
     rows = execute_query(query, {'dept_id': department_id})
     
     if not rows:
@@ -340,6 +353,7 @@ def get_department(department_id):
     FROM HR_EMPLOYEES
     WHERE DEPARTMENT_ID = :dept_id
     """
+    
     emp_rows = execute_query(emp_query, {'dept_id': department_id})
     
     employees = [
@@ -356,10 +370,10 @@ def get_department(department_id):
         "department_id": row[0],
         "department_name": row[1],
         "manager_id": row[2],
-        "location_id": row[3],
-        "city": row[4],
-        "state_province": row[5],
-        "country_name": row[6],
+        "manager_first_name": row[3] if row[3] else 'Not Assigned',  # Manager's first name
+        "location_city": row[4] if row[4] else 'Not Specified',  # Location city
+        "location_country": row[5] if row[5] else 'Not Specified',  # Location country
+        "job_title": row[6] if row[6] else 'Not Assigned',  # Job title of the manager
         "employees": employees
     }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
-from ..app import create_app, db
-from ..app.models import User, Department, Job, Employee
+from app import create_app, db
+from app.models import User, Department, Job, Employee
 
 # Get configuration from environment or use default
 config_name = os.environ.get('FLASK_CONFIG', 'development')

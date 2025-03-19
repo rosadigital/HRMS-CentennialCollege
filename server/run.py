@@ -10,22 +10,7 @@ app = create_app(config_name)
 CORS(app,
      origins=["https://hrms-k8mukh4zf-rosadigitals-projects.vercel.app",
               "http://localhost:3000/"],
-     supports_credentials=True,
-     resources={
-  r"/*": {
-   "origins": "*",
-   "methods": [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-   ],
-   "allow_headers": [
-    "Content-Type",
-    "Authorization",
-   ],}},)
+     supports_credentials=True)
 
 @app.shell_context_processor
 def make_shell_context():

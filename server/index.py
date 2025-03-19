@@ -9,7 +9,9 @@ config_name = os.environ.get('FLASK_CONFIG', 'development')
 app = create_app(config_name)
 CORS(app,
      origins=["https://hrms-k8mukh4zf-rosadigitals-projects.vercel.app",
-              "http://localhost:3000/"],
+              "http://localhost:3000/",
+              "hrms-chi.vercel.app",
+              "hrms-rosadigitals-projects.vercel.app"],
      supports_credentials=True)
 
 @app.shell_context_processor

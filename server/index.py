@@ -10,8 +10,8 @@ app = create_app(config_name)
 CORS(app,
      origins=["https://hrms-k8mukh4zf-rosadigitals-projects.vercel.app",
               "http://localhost:3000/",
-              "http://hrms-chi.vercel.app",
-              "http://hrms-rosadigitals-projects.vercel.app"],
+              "https://hrms-chi.vercel.app",
+              "https://hrms-rosadigitals-projects.vercel.app"],
      supports_credentials=True)
 
 @app.shell_context_processor

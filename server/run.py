@@ -8,7 +8,8 @@ from flask_cors import CORS
 config_name = os.environ.get('FLASK_CONFIG', 'development')
 app = create_app(config_name)
 CORS(app,
-     origins=["https://hrms-k8mukh4zf-rosadigitals-projects.vercel.app"],
+     origins=["https://hrms-k8mukh4zf-rosadigitals-projects.vercel.app",
+              "http://localhost:3000/"],
      supports_credentials=True,
      resources={
   r"/*": {

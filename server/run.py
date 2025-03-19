@@ -2,10 +2,12 @@
 import os
 from app import create_app, db
 from app.models import User, Department, Job, Employee
+from flask_cors import CORS
 
 # Get configuration from environment or use default
 config_name = os.environ.get('FLASK_CONFIG', 'development')
 app = create_app(config_name)
+CORS(app) 
 
 @app.shell_context_processor
 def make_shell_context():

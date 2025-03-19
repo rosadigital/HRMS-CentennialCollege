@@ -7,7 +7,7 @@ from flask_cors import CORS
 # Get configuration from environment or use default
 config_name = os.environ.get('FLASK_CONFIG', 'development')
 app = create_app(config_name)
-CORS(app, supports_credentials=True) 
+CORS(app, origins=["https://hrms-k8mukh4zf-rosadigitals-projects.vercel.app"], supports_credentials=True) 
 
 @app.shell_context_processor
 def make_shell_context():

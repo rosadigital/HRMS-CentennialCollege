@@ -179,13 +179,13 @@ const AddDepartmentModal = ({ isOpen, onClose, onSuccess }) => {
                 >
                   <option value="">Select Manager</option>
                   {employees
-                    .sort((a, b) =>
-                      `${a.first_name} ${a.last_name}`.toLowerCase().localeCompare(
-                        `${b.first_name} ${b.last_name}`.toLowerCase()
-                      )
-                    )
+                    // .sort((a, b) =>
+                    //   `${a.first_name} ${a.last_name}`.toLowerCase().localeCompare(
+                    //     `${b.first_name} ${b.last_name}`.toLowerCase()
+                    //   )
+                    // )
                     .map((emp) => (
-                      <option key={emp.manager_id} value={emp.manager_id}>
+                      <option key={emp.employee_id} value={emp.employee_id}>
                         {emp.first_name} {emp.last_name}
                       </option>
                     ))}

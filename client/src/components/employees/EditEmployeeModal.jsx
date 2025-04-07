@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { employeeService, departmentService, jobService, hrLocation } from '../../services/api';
+import { employeeService, departmentService, jobService} from '../../services/api';
 
 const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -18,7 +18,6 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
   const [errors, setErrors] = useState({});
   const [departments, setDepartments] = useState([]);
   const [jobs, setJobs] = useState([]);
-  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
   
   useEffect(() => {
@@ -27,7 +26,6 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
         const [deptResponse, jobResponse, locResponse] = await Promise.all([
           departmentService.getAll(),
           jobService.getAll(),
-          hrLocation.getAll(),
         ]);
         
         // Departments
@@ -44,11 +42,6 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
           setJobs([]);
         }
 
-        if (locResponse.data.success) {
-          setLocations(locResponse.data.locations || []);
-        } else {
-          setLocations([]);
-        }
 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -311,29 +304,6 @@ const EditEmployeeModal = ({ isOpen, onClose, employee, onSuccess }) => {
                 </select>
               </div>
               
-              <div>
-                <label className="block text-sm font-medium mb-1">Location</label>
-                <select
-                  name="location"
-                  value={formData.location || ''}
-                  onChange={handleChange}
-                  className="w-full p-2 border border-gray-300 rounded"
-                >
-                  <option value="">Select Location</option>
-                  {[...locations]
-                    .sort((a, b) => {
-                      const aStr = `${a.country_name}, ${a.city}`.toLowerCase();
-                      const bStr = `${b.country_name}, ${b.city}`.toLowerCase();
-                      return aStr.localeCompare(bStr);
-                    })
-                    .map((loc) => (
-                      <option key={loc.location_id} value={loc.location_id}>
-                        {loc.country_name}, {loc.city}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
 
               <div>
                 <label className="block text-sm font-medium mb-1">Hire Date</label>

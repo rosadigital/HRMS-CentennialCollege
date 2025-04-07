@@ -89,7 +89,8 @@ const Employees = () => {
       : true;
       
     const matchesLocation = selectedLocation
-      ? employee.location === selectedLocation
+      ? employee.department_location_city === selectedLocation || 
+        employee.department_location_country === selectedLocation
       : true;
       
     return matchesSearch && matchesDepartment && matchesLocation;
@@ -128,7 +129,7 @@ const Employees = () => {
   
   const handleUpdateSuccess = (updatedEmployee) => {
     setEmployees(employees.map(emp => 
-      emp.id === updatedEmployee.id ? updatedEmployee : emp
+      emp.employee_id === updatedEmployee.employee_id ? updatedEmployee : emp
     ));
     setSuccessMessage('Employee updated successfully!');
     setTimeout(() => {
@@ -276,14 +277,14 @@ const Employees = () => {
             <div className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 bg-gray-50 text-sm font-medium text-gray-500">
               <div className="col-span-4">EMPLOYEE</div>
               <div className="col-span-3">DEPARTMENT</div>
-              <div className="col-span-2">LOCATION</div>
+              {/* <div className="col-span-2">LOCATION</div> */}
               <div className="col-span-1">STATUS</div>
               <div className="col-span-2 text-right">ACTIONS</div>
             </div>
             
             {/* Table Content */}
             {currentEmployees.map((employee) => (
-              <div key={employee.id} className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 items-center">
+              <div key={employee.employee_id} className="grid grid-cols-12 gap-4 p-4 border-b border-gray-100 items-center">
                 <div className="col-span-4 flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full overflow-hidden bg-green-100 flex items-center justify-center">
                     {employee.image_url ? (
@@ -303,7 +304,10 @@ const Employees = () => {
                   <p>{employee.department_name || 'Not Assigned'}</p>
                   <p className="text-sm text-gray-500">{employee.job_title || 'Not Assigned'}</p>
                 </div>
-                <div className="col-span-2">{employee.location || 'Not Specified'}</div>
+                {/* <div className="col-span-2">
+                  <p>{employee.department_location_city || 'Not Specified'}</p>
+                  <p className="text-sm text-gray-500">{employee.department_location_country || ''}</p>
+                </div> */}
                 <div className="col-span-1">
                   <span className="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-600">
                     Active

@@ -9,7 +9,8 @@ import {
   LogOut, 
   Settings,
   Bell,
-  User
+  User,
+  MapPin
 } from 'lucide-react';
 import { authService } from '../../services/api';
 
@@ -26,9 +27,10 @@ const DashboardLayout = ({ children }) => {
 
   const navigationItems = [
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
-    { name: 'Employees', path: '/employees', icon: <Users className="w-5 h-5" /> },
+    { name: 'Locations', path: '/locations', icon: <MapPin className="w-5 h-5" /> },
     { name: 'Departments', path: '/departments', icon: <Building2 className="w-5 h-5" /> },
-    { name: 'Jobs', path: '/jobs', icon: <Briefcase className="w-5 h-5" /> },
+    { name: 'Employees', path: '/employees', icon: <Users className="w-5 h-5" /> },
+    { name: 'Job History', path: '/jobs', icon: <Briefcase className="w-5 h-5" /> },
     // { name: 'Settings', path: '/settings', icon: <Settings className="w-5 h-5" /> },
   ];
 

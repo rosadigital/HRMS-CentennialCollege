@@ -72,6 +72,11 @@ export const jobService = {
   delete: (id) => api.delete(`/jobs/${id}`),
 };
 
+export const jobHistoryService = {
+  getAll: () => api.get('/job-history'),
+  getByEmployeeId: (employeeId) => api.get(`/job-history/employee/${employeeId}`),
+};
+
 export const hrLocation = {
   getAll: () => api.get('/locations'),
   getById: (id) => api.get(`/locations/${id}`),

@@ -148,7 +148,7 @@ const Departments = () => {
   
   const handleUpdateSuccess = (updatedDepartment) => {
     setDepartments(departments.map(dep => 
-      dep.id === updatedDepartment.department_id ? updatedDepartment : dep
+      dep.department_id === updatedDepartment.department_id ? updatedDepartment : dep
     ));
     setSuccessMessage('Department updated successfully!');
     setTimeout(() => {

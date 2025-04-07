@@ -8,13 +8,10 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
     department_name: '',
     manager_id: '',
     location_id: '',
-    department_id: '',
     manager_first_name: '',
     manager_last_name: '',
     location_city: '',
-    location_country: '',
-
-
+    location_country: ''
   });
 
   const [errors, setErrors] = useState({});
@@ -39,7 +36,6 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
         }
 
         if (deptResponse.data.success) {
-          console.log(deptResponse);
           setDepartments(deptResponse.data.departments || []);
         } else {
           setDepartments([]);
@@ -62,13 +58,11 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
   
   useEffect(() => {
     if (department) {
-      
       setFormData({
-        department_id: department.department_id,
+        department_id: department.department_id || '',
         department_name: department.department_name || '',
         manager_id: department.manager_id || '',
         location_id: department.location_id || '',
-        department_id: department.department_id || '',
         manager_first_name: department.manager_first_name || '',
         manager_last_name: department.manager_last_name || '',
         location_city: department.location_city || '',
@@ -89,9 +83,7 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
   const validateForm = () => {
     const newErrors = {};
     
-    if (!formData.department_name) newErrors.department_name = 'Department title is required';
-    if (!formData.manager_id) newErrors.manager_id = 'Manager is required';
-    if (!formData.location_id) newErrors.location_id = 'Location is required';
+    if (!formData.department_name) newErrors.department_name = 'Department name is required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -104,11 +96,6 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
     setLoading(true);
 
     try {
-        const maxDepartmentId = departments.reduce((max, dept) => {
-          return dept.department_id > max ? dept.department_id : max;
-        }, 0);
-        const newDepartmentId = maxDepartmentId + 10;
-
       const departmentData = {
         department_name: formData.department_name,
         department_id: formData.department_id,
@@ -116,20 +103,16 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
         location_id: formData.location_id ? parseInt(formData.location_id, 10) : null,
       };
 
-      const response = await departmentService.update(department.department_id, departmentData);
+      console.log('Updating department with data:', departmentData);
+
+      const response = await departmentService.update(formData.department_id, departmentData);
 
       if (response.data.success) {
         onSuccess(response.data.department);
         onClose();
-  
-        setFormData({
-          department_name: '',
-          manager_id: '',
-          location_id: '',
-        });
       }
     } catch (error) {
-      console.error('Error creating department:', error);
+      console.error('Error updating department:', error);
   
       if (error.response && error.response.data) {
         if (error.response.data.errors) {
@@ -187,7 +170,6 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
             <h3 className="text-lg font-medium mb-4">Department Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Department Name */}
-
               <div>
                 <label className="block text-sm font-medium mb-1">Department Name</label>
                 <input
@@ -203,8 +185,6 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
                   <p className="text-red-500 text-xs mt-1">{errors.department_name}</p>
                 )}
               </div>
-
-
             </div>
           </div>
 
@@ -213,75 +193,45 @@ const EditDepartmentModal = ({ isOpen, onClose, department, onSuccess }) => {
             <h3 className="text-lg font-medium mb-4">Department Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Manager */}
-
               <div>
                 <label className="block text-sm font-medium mb-1">Manager</label>
                 <select
                   name="manager_id"
-                  value={formData.manager_id}  // The value to be sent to the backend is manager_id
+                  value={formData.manager_id}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded ${
-                    errors.manager_id ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full p-2 border rounded"
                 >
-                  <option value="">
-                    {formData.manager_first_name && formData.manager_last_name
-                      ? `${formData.manager_first_name}, ${formData.manager_last_name}`
-                      : 'Select Location'}
-                  </option>
-                  {[...employees]
-                    .sort((a, b) => {
-                      const aStr = `${a.first_name}, ${a.last_name}`.toLowerCase();
-                      const bStr = `${b.first_name}, ${b.last_name}`.toLowerCase();
-                      return aStr.localeCompare(bStr);
-                    })
-                    .map((emp) => (
-                      <option key={emp.employee_id} value={emp.employee_id}>
-                        {emp.first_name} {emp.last_name} {/* Display first and last name */}
-                      </option>
-                    ))}
+                  <option value="">Select Manager</option>
+                  {employees.map((emp) => (
+                    <option key={emp.employee_id} value={emp.employee_id}>
+                      {emp.first_name} {emp.last_name}
+                    </option>
+                  ))}
                 </select>
-
-                {errors.employee_id && (
-                  <p className="text-red-500 text-xs mt-1">{errors.employee_id}</p>
+                {errors.manager_id && (
+                  <p className="text-red-500 text-xs mt-1">{errors.manager_id}</p>
                 )}
               </div>
-
 
               <div>
                 <label className="block text-sm font-medium mb-1">Location</label>
                 <select
                   name="location_id"
-                  value={formData.location_id}  // The value to be sent to the backend is location_id
+                  value={formData.location_id}
                   onChange={handleChange}
-                  className={`w-full p-2 border rounded ${
-                    errors.location_id ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className="w-full p-2 border rounded"
                 >
-                  <option value="">
-                    {formData.location_city && formData.location_country
-                      ? `${formData.location_city}, ${formData.location_country}`
-                      : 'Select Location'}
-                  </option>
-                  {[...locations]
-                    .sort((a, b) => {
-                      const aStr = `${a.country_name}, ${a.city}`.toLowerCase();
-                      const bStr = `${b.country_name}, ${b.city}`.toLowerCase();
-                      return aStr.localeCompare(bStr);
-                    })
-                    .map((loc) => (
-                      <option key={loc.location_id} value={loc.location_id}>
-                        {loc.country_name}, {loc.city} {/* Display city and country */}
-                      </option>
-                    ))}
+                  <option value="">Select Location</option>
+                  {locations.map((loc) => (
+                    <option key={loc.location_id} value={loc.location_id}>
+                      {loc.country_name}, {loc.city}
+                    </option>
+                  ))}
                 </select>
-
                 {errors.location_id && (
                   <p className="text-red-500 text-xs mt-1">{errors.location_id}</p>
                 )}
               </div>
-
-
             </div>
           </div>
           

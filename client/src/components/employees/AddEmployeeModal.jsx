@@ -18,8 +18,6 @@ const AddEmployeeModal = ({ isOpen, onClose, onSuccess }) => {
   const [errors, setErrors] = useState({});
   const [departments, setDepartments] = useState([]);
   const [jobs, setJobs] = useState([]);
-  // If you do not store location in the EMPLOYEES table, you can remove:
-  const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -27,8 +25,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onSuccess }) => {
       try {
         const [deptResponse, jobResponse, locResponse] = await Promise.all([
           departmentService.getAll(),
-          jobService.getAll(),
-          hrLocation.getAll(),
+          jobService.getAll()
         ]);
 
         // Departments
@@ -43,12 +40,6 @@ const AddEmployeeModal = ({ isOpen, onClose, onSuccess }) => {
           setJobs(jobResponse.data.jobs || []);
         } else {
           setJobs([]);
-        }
-
-        if (locResponse.data.success) {
-          setLocations(locResponse.data.locations || []);
-        } else {
-          setLocations([]);
         }
 
       } catch (error) {
@@ -101,25 +92,20 @@ const AddEmployeeModal = ({ isOpen, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
-      // Build the object with the exact Oracle column names
       const employeeData = {
         first_name: formData.first_name,
         last_name: formData.last_name,
         email: formData.email,
         phone_number: formData.phone,
-        hire_date: formData.hire_date, // string -> your backend should parse into a DATE
-        job_id: formData.job_id,       // e.g. 'FI_ACCOUNT'
+        hire_date: formData.hire_date,
+        job_id: formData.job_id,
         salary: parseFloat(formData.salary),
-        // If you want to store bonus as a decimal (e.g., 5% = 5.00):
         commission_pct: formData.bonus ? parseFloat(formData.bonus) : null,
         department_id: formData.department_id
           ? parseInt(formData.department_id, 10)
           : null,
-        // Add MANAGER_ID if needed, e.g.:
-        // MANAGER_ID: ...
       };
 
-      // Now call your service with these exact DB column keys
       const response = await employeeService.create(employeeData);
 
       if (response.data.success) {
@@ -146,7 +132,6 @@ const AddEmployeeModal = ({ isOpen, onClose, onSuccess }) => {
         if (error.response.data.errors) {
           setErrors(error.response.data.errors);
         } else if (error.response.data.message) {
-          // e.g. "Email already exists"
           if (error.response.data.message.includes('Email')) {
             setErrors({ email: error.response.data.message });
           } else {
@@ -310,7 +295,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium mb-1">Location</label>
                 <select
                   name="location"
@@ -331,7 +316,7 @@ const AddEmployeeModal = ({ isOpen, onClose, onSuccess }) => {
                       </option>
                     ))}
                 </select>
-              </div>
+              </div> */}
 
               {/* Hire Date */}
               <div>

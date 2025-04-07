@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from ..models import Location, Department
 from .. import db
 from ..utils.db_utils import get_locations, get_location, get_location_options
+from sqlalchemy.sql import text
 
 location_bp = Blueprint('location', __name__)
 
@@ -80,7 +81,11 @@ def create_location():
             oracle_data[field_mapping[key]] = value
     
     try:
-        new_location = Location(**oracle_data)
+        # Create a new location with a generated LOCATION_ID
+        new_location = Location(
+            LOCATION_ID=db.session.execute(text('SELECT HR_LOCATIONS_SEQ.NEXTVAL FROM DUAL')).scalar(),
+            **oracle_data
+        )
         db.session.add(new_location)
         db.session.commit()
         

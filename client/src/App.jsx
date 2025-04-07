@@ -9,9 +9,7 @@ import Employees from './pages/Employees';
 import Departments from './pages/Departments';
 import Jobs from './pages/Jobs';
 import Profile from './pages/Profile';
-
-// Context (to be implemented)
-// import { AuthProvider } from './contexts/AuthContext';
+import Locations from './pages/Locations';
 
 function App() {
   // Check for authentication token in localStorage
@@ -48,6 +46,7 @@ function App() {
           <Route path="/departments" element={isAuthenticated ? <Departments /> : <Navigate to="/login" />} />
           <Route path="/jobs" element={isAuthenticated ? <Jobs /> : <Navigate to="/login" />} />
           <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/locations" element={isAuthenticated ? <Locations /> : <Navigate to="/login" />} />
           
           {/* Default redirect */}
           <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
